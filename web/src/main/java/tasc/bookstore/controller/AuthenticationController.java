@@ -1,14 +1,19 @@
 package tasc.bookstore.controller;
 
 
+import com.nimbusds.jose.JOSEException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 import tasc.bookstore.dto.request.AuthenticationRequest;
+import tasc.bookstore.dto.request.IntrospectRequest;
 import tasc.bookstore.dto.response.ApiResponse;
 import tasc.bookstore.dto.response.AuthenticationResponse;
+import tasc.bookstore.dto.response.IntrospectResponse;
 import tasc.bookstore.service.AuthenticationService;
+
+import java.text.ParseException;
 
 
 @RestController
@@ -19,13 +24,19 @@ public class AuthenticationController {
 
     AuthenticationService authenticationService;
 
-    @PostMapping("/log-in")
+    @PostMapping("/token")
     ApiResponse<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
-        boolean result = authenticationService.authenticate(request);
+        var result = authenticationService.authenticate(request);
         return ApiResponse.<AuthenticationResponse>builder()
-                .result(AuthenticationResponse.builder()
-                        .authenticated(result)
-                        .build())
+                .result(result)
+                .build();
+    }
+
+    @PostMapping("/introspect")
+    ApiResponse<IntrospectResponse> authenticate(@RequestBody IntrospectRequest request) throws ParseException, JOSEException {
+        var result = authenticationService.introspect(request);
+        return ApiResponse.<IntrospectResponse>builder()
+                .result(result)
                 .build();
     }
 

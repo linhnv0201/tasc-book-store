@@ -12,6 +12,7 @@ public enum ErrorCode {
     USER_EXISTED(999, "User already existed"),
     USER_NOT_FOUND(999, "User not found"),
     INVALID_PASSWORD(1003, "at least 4 characters"),
+    UNAUTHENTICATED(1001, "Unauthenticated"),
     ;
     int code;
     String message;

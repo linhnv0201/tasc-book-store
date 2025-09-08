@@ -1,7 +1,15 @@
 package tasc.bookstore.service;
 
+import com.nimbusds.jose.JOSEException;
 import tasc.bookstore.dto.request.AuthenticationRequest;
+import tasc.bookstore.dto.request.IntrospectRequest;
+import tasc.bookstore.dto.response.AuthenticationResponse;
+import tasc.bookstore.dto.response.IntrospectResponse;
+
+import java.text.ParseException;
 
 public interface AuthenticationService {
-    boolean authenticate(AuthenticationRequest authenticationRequest);
+    AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest);
+    IntrospectResponse introspect(IntrospectRequest request) throws ParseException, JOSEException;
+//    String generateToken(String email);
 }
