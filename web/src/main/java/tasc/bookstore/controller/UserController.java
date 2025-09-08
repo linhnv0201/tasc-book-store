@@ -11,7 +11,6 @@ import tasc.bookstore.dto.request.UserCreationRequest;
 import tasc.bookstore.dto.request.UserUpdateRequest;
 import tasc.bookstore.dto.response.ApiResponse;
 import tasc.bookstore.dto.response.UserResponse;
-import tasc.bookstore.entity.User;
 import tasc.bookstore.service.UserService;
 
 import java.util.List;
@@ -25,8 +24,8 @@ public class UserController {
     UserService userService;
 
     @PostMapping
-    public ApiResponse<User> createUser(@RequestBody UserCreationRequest request) {
-        ApiResponse<User> apiResponse = new ApiResponse<>();
+    public ApiResponse<UserResponse> createUser(@RequestBody UserCreationRequest request) {
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
         apiResponse.setResult(userService.createUser(request));
         return apiResponse;
     }
@@ -42,14 +41,6 @@ public class UserController {
         return apiResponse;
     }
 
-    // Get all users
-//    @GetMapping
-//    public ApiResponse<List<User>> getUsers() {
-//        ApiResponse<List<User>> apiResponse = new ApiResponse<>();
-//        apiResponse.setMessage("All users found");
-//        apiResponse.setResult(userService.getUsers());
-//        return apiResponse;
-//    }
     @GetMapping
     ApiResponse<List<UserResponse>> getUsers(){
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -85,5 +76,14 @@ public class UserController {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.getMyInfo())
                 .build();
+    }
+
+    // Update User
+    @PutMapping("/myInfo")
+    public ApiResponse<UserResponse> updateMyInfo(@RequestBody @Valid UserUpdateRequest request) {
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.updateMyInfo(request));
+        apiResponse.setMessage("Successfully updated your info");
+        return apiResponse;
     }
 }

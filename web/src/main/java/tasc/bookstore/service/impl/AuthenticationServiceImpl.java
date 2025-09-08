@@ -102,7 +102,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .issuer("vulinh")
                 .issueTime(new Date())
                 .expirationTime(new Date(
-                        Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
+                        Instant.now().plus(3, ChronoUnit.HOURS).toEpochMilli()
                 ))
                 .claim("scope", buildScope(user))
                 .build();
