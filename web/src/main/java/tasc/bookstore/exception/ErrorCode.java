@@ -11,9 +11,11 @@ import lombok.experimental.FieldDefaults;
 public enum ErrorCode {
     USER_EXISTED(999, "User already existed"),
     USER_NOT_FOUND(999, "User not found"),
-    INVALID_PASSWORD(1003, "at least 4 characters"),
+    INVALID_PASSWORD(999, "at least 4 characters"),
     UNAUTHENTICATED(1001, "Unauthenticated"),
     INVALID_ROLE(1002, "Invalid role"),
+    SUPPLIER_EXISTED(1003, "Supplier already existed"),
+    SUPPLIER_NOT_FOUND(1003, "Supplier not found"),
     ;
     int code;
     String message;

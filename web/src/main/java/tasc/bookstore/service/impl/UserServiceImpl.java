@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
-        User user = userRepository.findById(Math.toIntExact(id))
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         userMapper.toUpdateUser(user, request);
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -96,16 +96,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getUser(Long id) {
-        return userMapper.toUserResponse(userRepository.findById(Math.toIntExact(id))
+        return userMapper.toUserResponse(userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)));
     }
 
     @Override
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(Math.toIntExact(id))) {
+        if (!userRepository.existsById(id)) {
             throw new AppException(ErrorCode.USER_NOT_FOUND);
         }
-        userRepository.deleteById(Math.toIntExact(id));
+        userRepository.deleteById(id);
     }
 
     public UserResponse getMyInfo() {
