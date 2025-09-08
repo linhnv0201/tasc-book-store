@@ -5,6 +5,7 @@ import com.nimbusds.jose.JOSEException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import tasc.bookstore.dto.request.AuthenticationRequest;
 import tasc.bookstore.dto.request.IntrospectRequest;
@@ -14,7 +15,6 @@ import tasc.bookstore.dto.response.IntrospectResponse;
 import tasc.bookstore.service.AuthenticationService;
 
 import java.text.ParseException;
-
 
 @RestController
 @RequestMapping("/auth")

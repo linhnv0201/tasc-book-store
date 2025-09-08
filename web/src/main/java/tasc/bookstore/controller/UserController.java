@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import tasc.bookstore.dto.request.UserCreationRequest;
 import tasc.bookstore.dto.request.UserUpdateRequest;
@@ -42,12 +43,23 @@ public class UserController {
     }
 
     // Get all users
+//    @GetMapping
+//    public ApiResponse<List<User>> getUsers() {
+//        ApiResponse<List<User>> apiResponse = new ApiResponse<>();
+//        apiResponse.setMessage("All users found");
+//        apiResponse.setResult(userService.getUsers());
+//        return apiResponse;
+//    }
     @GetMapping
-    public ApiResponse<List<User>> getUsers() {
-        ApiResponse<List<User>> apiResponse = new ApiResponse<>();
-        apiResponse.setMessage("All users found");
-        apiResponse.setResult(userService.getUsers());
-        return apiResponse;
+    ApiResponse<List<UserResponse>> getUsers(){
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        log.info("Email: {}", authentication.getName());
+        authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
+
+        return ApiResponse.<List<UserResponse>>builder()
+                .result(userService.getUsers())
+                .build();
     }
 
     // Get user by id
@@ -68,4 +80,10 @@ public class UserController {
         return apiResponse;
     }
 
+    @GetMapping("/myInfo")
+    ApiResponse<UserResponse> getMyInfo(){
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getMyInfo())
+                .build();
+    }
 }

@@ -14,10 +14,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import tasc.bookstore.dto.request.AuthenticationRequest;
 import tasc.bookstore.dto.request.IntrospectRequest;
 import tasc.bookstore.dto.response.AuthenticationResponse;
 import tasc.bookstore.dto.response.IntrospectResponse;
+import tasc.bookstore.entity.User;
 import tasc.bookstore.exception.AppException;
 import tasc.bookstore.exception.ErrorCode;
 import tasc.bookstore.repository.UserRepository;
@@ -27,6 +29,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.StringJoiner;
 
 @Slf4j
 @Service
@@ -79,7 +82,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         String token;
         try {
-            token = generateToken(request.getEmail());
+            token = generateToken(user);
         } catch (JOSEException e) {
             throw new RuntimeException(e);
         }
@@ -91,17 +94,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     }
 
-    String generateToken(String email) throws JOSEException {
+    String generateToken(User user) throws JOSEException {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet jwtClaimSet = new JWTClaimsSet.Builder()
-                .subject(email)
+                .subject(user.getEmail())
                 .issuer("vulinh")
                 .issueTime(new Date())
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 ))
-                .claim("xxx", "xxx")
+                .claim("scope", buildScope(user))
                 .build();
 
         Payload payload = new Payload(jwtClaimSet.toJSONObject());
@@ -116,6 +119,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new RuntimeException(e);
         }
 
+    }
+
+    private String buildScope(User user){
+        StringJoiner stringJoiner = new StringJoiner(" ");
+        if (!CollectionUtils.isEmpty(user.getRole()))
+            user.getRole().forEach(stringJoiner::add);
+
+        return stringJoiner.toString();
     }
 
 }

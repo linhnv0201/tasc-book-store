@@ -3,6 +3,9 @@ package tasc.bookstore.service.impl;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +21,7 @@ import tasc.bookstore.service.UserService;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -46,8 +50,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> getUsers() {
-        return userRepository.findAll();
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<UserResponse> getUsers(){
+        log.info("getUsers()");
+        return userRepository.findAll().stream()
+                .map(userMapper::toUserResponse).toList();
     }
 
     @Override
@@ -62,5 +69,15 @@ public class UserServiceImpl implements UserService {
             throw new AppException(ErrorCode.USER_NOT_FOUND);
         }
         userRepository.deleteById(Math.toIntExact(id));
+    }
+
+    public UserResponse getMyInfo(){
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        return userMapper.toUserResponse(user);
     }
 }
