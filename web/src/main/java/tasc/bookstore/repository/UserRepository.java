@@ -6,4 +6,5 @@ import tasc.bookstore.entity.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
+    boolean existsByEmail(String email);
 }

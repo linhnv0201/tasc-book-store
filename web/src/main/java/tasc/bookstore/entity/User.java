@@ -1,8 +1,11 @@
 package tasc.bookstore.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.Set;
 
 @Getter
 @Setter
@@ -22,20 +25,16 @@ public class User {
     String email;
 
     @Column(nullable = false)
+    @Size(min = 4, message = "INVALID_PASSWORD")
     String password;
 
     String fullname;
 
     String phone;
 
+    //tạo cột trong DB kiểu TEXT thay vì để JPA tự chọn
     @Column(columnDefinition = "TEXT")
     String address;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    Role role;
-
-    public enum Role {
-        CUSTOMER, EMPLOYEE, ADMIN
-    }
+    Set<String> role;
 }

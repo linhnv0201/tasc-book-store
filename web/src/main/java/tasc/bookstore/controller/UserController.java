@@ -1,13 +1,15 @@
 package tasc.bookstore.controller;
 
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tasc.bookstore.dto.request.UserCreationRequest;
 import tasc.bookstore.dto.request.UserUpdateRequest;
+import tasc.bookstore.dto.response.ApiResponse;
+import tasc.bookstore.dto.response.UserResponse;
 import tasc.bookstore.entity.User;
 import tasc.bookstore.service.UserService;
 
@@ -22,36 +24,48 @@ public class UserController {
     UserService userService;
 
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody UserCreationRequest request) {
-        User user = userService.createUser(request);
-        return ResponseEntity.ok(user);
+    public ApiResponse<User> createUser(@RequestBody UserCreationRequest request) {
+        ApiResponse<User> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.createUser(request));
+        return apiResponse;
     }
 
     // Update User
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(
+    public ApiResponse<UserResponse> updateUser(
             @PathVariable Long id,
-            @RequestBody UserUpdateRequest request) {
-        User updatedUser = userService.updateUser(id, request);
-        return ResponseEntity.ok(updatedUser);
+            @RequestBody @Valid UserUpdateRequest request) {
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.updateUser(id, request));
+        apiResponse.setMessage("Successfully updated user");
+        return apiResponse;
     }
 
     // Get all users
     @GetMapping
-    public ResponseEntity<List<User>> getUsers() {
-        return ResponseEntity.ok(userService.getUsers());
+    public ApiResponse<List<User>> getUsers() {
+        ApiResponse<List<User>> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("All users found");
+        apiResponse.setResult(userService.getUsers());
+        return apiResponse;
     }
 
     // Get user by id
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUser(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUser(id));
+    public ApiResponse<UserResponse> getUser(@PathVariable Long id) {
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.getUser(id));
+        return apiResponse;
     }
 
     // Delete user
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ApiResponse<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+
+        ApiResponse<Void> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("User deleted successfully");
+        return apiResponse;
     }
+
 }
