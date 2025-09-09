@@ -1,6 +1,5 @@
 package tasc.bookstore.dto.request;
 
-import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

@@ -32,8 +32,7 @@ public class Product {
     @JoinTable(
             name = "product_categories",
             joinColumns = @JoinColumn(name = "product_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
+            inverseJoinColumns = @JoinColumn(name = "category_id"))
     Set<Category> categories;
 
     @Column(columnDefinition = "TEXT")
@@ -44,8 +43,8 @@ public class Product {
 
     BigDecimal cost;
 
-    @Column(nullable = false)
-    Integer stock;
+    @Builder.Default
+    Integer stock = 0;
 
     @Builder.Default
     Integer soldQuantity = 0;

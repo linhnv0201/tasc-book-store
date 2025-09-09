@@ -18,6 +18,9 @@ public enum ErrorCode {
     CATEGORY_EXISTED(1003, "Category already existed"),
     SUPPLIER_NOT_FOUND(1003, "Supplier not found"),
     CATEGORY_NOT_FOUND(1003, "Category not found"),
+    PRODUCT_EXISTED(1003, "Product already existed"),
+    PRODUCT_NOT_EXIST(1003, "Product not existed"),
+    PRODUCT_NOT_FOUND(1003, "Product not found"),
     ;
     int code;
     String message;
