@@ -1,7 +1,7 @@
 package tasc.bookstore.dto.request;
 
 import jakarta.annotation.Nullable;
-//import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +15,7 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserUpdateRequest {
 
-//    @Size(min = 4, message = "Password phải có ít nhất 4 ký tự")
+    @Size(min = 4, message = "Password phải có ít nhất 4 ký tự")
     @Nullable
     String password;
     String fullname;

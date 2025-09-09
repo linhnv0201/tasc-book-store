@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Set;
+
 @Getter
 @Setter
 @Builder
@@ -20,4 +22,7 @@ public class Category {
 
     @Column(nullable = false, unique = true)
     String name;
+
+    @ManyToMany(mappedBy = "categories")
+    Set<Product> products;
 }

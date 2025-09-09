@@ -15,7 +15,9 @@ public enum ErrorCode {
     UNAUTHENTICATED(1001, "Unauthenticated"),
     INVALID_ROLE(1002, "Invalid role"),
     SUPPLIER_EXISTED(1003, "Supplier already existed"),
+    CATEGORY_EXISTED(1003, "Category already existed"),
     SUPPLIER_NOT_FOUND(1003, "Supplier not found"),
+    CATEGORY_NOT_FOUND(1003, "Category not found"),
     ;
     int code;
     String message;
