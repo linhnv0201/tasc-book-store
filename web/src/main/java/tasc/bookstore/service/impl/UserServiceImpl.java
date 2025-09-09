@@ -12,11 +12,13 @@ import org.springframework.stereotype.Service;
 import tasc.bookstore.dto.request.UserCreationRequest;
 import tasc.bookstore.dto.request.UserUpdateRequest;
 import tasc.bookstore.dto.response.UserResponse;
+import tasc.bookstore.entity.Cart;
 import tasc.bookstore.entity.User;
 import tasc.bookstore.enums.Role;
 import tasc.bookstore.exception.AppException;
 import tasc.bookstore.exception.ErrorCode;
 import tasc.bookstore.mapper.UserMapper;
+import tasc.bookstore.repository.CartRepository;
 import tasc.bookstore.repository.UserRepository;
 import tasc.bookstore.service.UserService;
 
@@ -49,6 +51,7 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.toCreateUser(request);
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
@@ -58,6 +61,7 @@ public class UserServiceImpl implements UserService {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
         User user = userMapper.toCreateUser(request);
+
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(Set.of(Role.CUSTOMER.name()));
