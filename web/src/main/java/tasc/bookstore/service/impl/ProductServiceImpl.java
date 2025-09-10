@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tasc.bookstore.dto.request.ProductCreationRequest;
 import tasc.bookstore.dto.request.ProductUpdateRequest;
 import tasc.bookstore.dto.response.ProductResponse;
@@ -15,13 +16,12 @@ import tasc.bookstore.exception.ErrorCode;
 import tasc.bookstore.mapper.ProductMapper;
 import tasc.bookstore.repository.CategoryRepository;
 import tasc.bookstore.repository.ProductRepository;
-import tasc.bookstore.service.CategoryService;
 import tasc.bookstore.service.ProductService;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -42,9 +42,10 @@ public class ProductServiceImpl implements ProductService {
         product.setCreatedAt(LocalDateTime.now());
 
         // Lấy danh sách Category entity từ categoryIds
-        Set<Category> categoryEntities = categoryRepository.findAllById(request.getCategoryIds())
-                .stream()
-                .collect(Collectors.toSet());
+//        Set<Category> categoryEntities = categoryRepository.findAllById(request.getCategoryIds())
+//                .stream()
+//                .collect(Collectors.toSet());
+        Set<Category> categoryEntities = new HashSet<>(categoryRepository.findAllById(request.getCategoryIds()));
 
         // Gán category entity cho product
         product.setCategories(categoryEntities);
@@ -74,8 +75,6 @@ public class ProductServiceImpl implements ProductService {
         return productMapper.toProductResponse(product);
     }
 
-
-
     @Override
     public ProductResponse getProduct(Long id) {
         Product product = productRepository.findById(id).orElseThrow(
@@ -91,8 +90,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional(readOnly = true)  // ← cần để giữ connection mở, dùng với khai báo StoreProcedure
     public List<ProductResponse> getAllProductsByCategory(Long category) {
-        return productRepository.findByCategories(category).stream()
+        return productRepository.GetProductsByCategoryId(category).stream()
                 .map(productMapper::toProductResponse)
                 .toList();
     }

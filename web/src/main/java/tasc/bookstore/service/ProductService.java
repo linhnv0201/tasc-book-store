@@ -1,5 +1,6 @@
 package tasc.bookstore.service;
 
+import org.springframework.transaction.annotation.Transactional;
 import tasc.bookstore.dto.request.ProductCreationRequest;
 import tasc.bookstore.dto.request.ProductUpdateRequest;
 import tasc.bookstore.dto.response.ProductResponse;
