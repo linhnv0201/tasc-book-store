@@ -4,6 +4,7 @@ import com.nimbusds.jose.JOSEException;
 import tasc.bookstore.dto.request.AuthenticationRequest;
 import tasc.bookstore.dto.request.IntrospectRequest;
 import tasc.bookstore.dto.request.LogoutRequest;
+import tasc.bookstore.dto.request.RefreshRequest;
 import tasc.bookstore.dto.response.AuthenticationResponse;
 import tasc.bookstore.dto.response.IntrospectResponse;
 
@@ -13,5 +14,6 @@ public interface AuthenticationService {
     AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest);
     IntrospectResponse introspect(IntrospectRequest request) throws ParseException, JOSEException;
     void logout(LogoutRequest request) throws ParseException, JOSEException;
+    AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException;
 //    String generateToken(String email);
 }

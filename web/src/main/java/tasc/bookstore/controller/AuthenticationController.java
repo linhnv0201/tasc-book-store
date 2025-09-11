@@ -7,10 +7,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
-import tasc.bookstore.dto.request.AuthenticationRequest;
-import tasc.bookstore.dto.request.IntrospectRequest;
-import tasc.bookstore.dto.request.LogoutRequest;
-import tasc.bookstore.dto.request.UserCreationRequest;
+import tasc.bookstore.dto.request.*;
 import tasc.bookstore.dto.response.ApiResponse;
 import tasc.bookstore.dto.response.AuthenticationResponse;
 import tasc.bookstore.dto.response.IntrospectResponse;
@@ -44,6 +41,14 @@ public class AuthenticationController {
     ApiResponse<IntrospectResponse> authenticate(@RequestBody IntrospectRequest request) throws ParseException, JOSEException {
         IntrospectResponse result = authenticationService.introspect(request);
         ApiResponse<IntrospectResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(result);
+        return apiResponse;
+    }
+
+    @PostMapping("/refresh")
+    ApiResponse<AuthenticationResponse> authenticate(@RequestBody RefreshRequest request) throws ParseException, JOSEException {
+        var result = authenticationService.refreshToken(request);
+        ApiResponse<AuthenticationResponse> apiResponse = new ApiResponse<>();
         apiResponse.setResult(result);
         return apiResponse;
     }
