@@ -17,11 +17,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import tasc.bookstore.dto.request.AuthenticationRequest;
 import tasc.bookstore.dto.request.IntrospectRequest;
+import tasc.bookstore.dto.request.LogoutRequest;
 import tasc.bookstore.dto.response.AuthenticationResponse;
 import tasc.bookstore.dto.response.IntrospectResponse;
+import tasc.bookstore.entity.InvalidatedToken;
 import tasc.bookstore.entity.User;
 import tasc.bookstore.exception.AppException;
 import tasc.bookstore.exception.ErrorCode;
+import tasc.bookstore.repository.InvalidatedTokenRepository;
 import tasc.bookstore.repository.UserRepository;
 import tasc.bookstore.service.AuthenticationService;
 
@@ -30,6 +33,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.StringJoiner;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -38,6 +42,7 @@ import java.util.StringJoiner;
 public class AuthenticationServiceImpl implements AuthenticationService {
 
     UserRepository userRepository;
+    InvalidatedTokenRepository invalidatedTokenRepository;
 
     //Nếu bạn thêm @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true) ở class, thì
     //          tất cả field mặc định là final.
@@ -51,17 +56,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public IntrospectResponse introspect(IntrospectRequest request) throws ParseException, JOSEException {
         var token = request.getToken();
-
-        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
-
-        SignedJWT signedJWT = SignedJWT.parse(token);
-
-        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-
-        var verifired = signedJWT.verify(verifier);
-
+        boolean isValid = true;
+        try {
+            verifyToken(token);
+        } catch (AppException e) {
+            isValid = false;
+        }
         return IntrospectResponse.builder()
-                .valid(verifired && expiryTime.after(new Date()))
+                .valid(isValid)
                 .build();
 
     }
@@ -94,6 +96,39 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     }
 
+    @Override
+    public void logout(LogoutRequest request) throws ParseException, JOSEException {
+        var signedToken = verifyToken(request.getToken());
+        String jti = signedToken.getJWTClaimsSet().getJWTID();
+        Date expiryTime = signedToken.getJWTClaimsSet().getExpirationTime();
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                .id(jti)
+                .expireTime(expiryTime)
+                .build();
+
+        invalidatedTokenRepository.save(invalidatedToken);
+    }
+
+    private SignedJWT verifyToken(String token) throws ParseException, JOSEException {
+        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        var verifired = signedJWT.verify(verifier);
+
+        if (!(verifired && expiryTime.after(new Date()))) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())){
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        return signedJWT;
+    }
+
     String generateToken(User user) throws JOSEException {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
@@ -104,6 +139,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .expirationTime(new Date(
                         Instant.now().plus(3, ChronoUnit.HOURS).toEpochMilli()
                 ))
+                .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
                 .build();
 
@@ -121,12 +157,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     }
 
-    private String buildScope(User user){
+    private String buildScope(User user) {
         StringJoiner stringJoiner = new StringJoiner(" ");
         if (!CollectionUtils.isEmpty(user.getRole()))
             user.getRole().forEach(stringJoiner::add);
 
         return stringJoiner.toString();
     }
+
 
 }

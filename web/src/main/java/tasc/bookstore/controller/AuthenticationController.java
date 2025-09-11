@@ -6,16 +6,15 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import tasc.bookstore.dto.request.AuthenticationRequest;
 import tasc.bookstore.dto.request.IntrospectRequest;
+import tasc.bookstore.dto.request.LogoutRequest;
 import tasc.bookstore.dto.request.UserCreationRequest;
 import tasc.bookstore.dto.response.ApiResponse;
 import tasc.bookstore.dto.response.AuthenticationResponse;
 import tasc.bookstore.dto.response.IntrospectResponse;
 import tasc.bookstore.dto.response.UserResponse;
-import tasc.bookstore.entity.User;
 import tasc.bookstore.service.AuthenticationService;
 import tasc.bookstore.service.UserService;
 
@@ -32,26 +31,37 @@ public class AuthenticationController {
 
     @PostMapping("/token")
     ApiResponse<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
-        var result = authenticationService.authenticate(request);
-        return ApiResponse.<AuthenticationResponse>builder()
-                .result(result)
-                .build();
+        ApiResponse<AuthenticationResponse> apiResponse = new ApiResponse<>();
+        AuthenticationResponse result = authenticationService.authenticate(request);
+        apiResponse.setResult(result);
+        return apiResponse;
+//        return ApiResponse.<AuthenticationResponse>builder()
+//                .result(result)
+//                .build();
     }
 
     @PostMapping("/introspect")
     ApiResponse<IntrospectResponse> authenticate(@RequestBody IntrospectRequest request) throws ParseException, JOSEException {
-        var result = authenticationService.introspect(request);
-        return ApiResponse.<IntrospectResponse>builder()
-                .result(result)
-                .build();
+        IntrospectResponse result = authenticationService.introspect(request);
+        ApiResponse<IntrospectResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(result);
+        return apiResponse;
     }
 
     @PostMapping("/register")
     public ApiResponse<UserResponse> register(@RequestBody @Valid UserCreationRequest request) {
-        return ApiResponse.<UserResponse>builder()
-                .result(userService.registerCustomer(request))
-                .message("Register successfully")
-                .build();
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Register successful");
+        apiResponse.setResult(userService.registerCustomer(request));
+        return apiResponse;
+    }
+
+    @PostMapping("/logout")
+    ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
+        ApiResponse<Void> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Logout successful");
+        authenticationService.logout(request);
+        return apiResponse;
     }
 
 }
