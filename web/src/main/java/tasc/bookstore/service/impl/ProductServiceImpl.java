@@ -42,9 +42,6 @@ public class ProductServiceImpl implements ProductService {
         product.setCreatedAt(LocalDateTime.now());
 
         // Lấy danh sách Category entity từ categoryIds
-//        Set<Category> categoryEntities = categoryRepository.findAllById(request.getCategoryIds())
-//                .stream()
-//                .collect(Collectors.toSet());
         Set<Category> categoryEntities = new HashSet<>(categoryRepository.findAllById(request.getCategoryIds()));
 
         // Gán category entity cho product
