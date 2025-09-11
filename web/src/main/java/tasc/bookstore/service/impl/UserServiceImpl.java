@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import tasc.bookstore.dto.request.UserCreationRequest;
+import tasc.bookstore.dto.request.UserPasswordUpdateRequest;
 import tasc.bookstore.dto.request.UserUpdateRequest;
 import tasc.bookstore.dto.response.UserResponse;
 import tasc.bookstore.entity.Cart;
@@ -73,8 +74,8 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         userMapper.toUpdateUser(user, request);
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+//        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+//        user.setPassword(passwordEncoder.encode(request.getPassword()));
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
@@ -84,6 +85,17 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         userMapper.toUpdateUser(user, request);
+//        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+//        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        return userMapper.toUserResponse(userRepository.save(user));
+    }
+
+    @Override
+    public UserResponse updateMyPassword(UserPasswordUpdateRequest request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+//        userMapper.toUpdateUser(user, request);
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         return userMapper.toUserResponse(userRepository.save(user));

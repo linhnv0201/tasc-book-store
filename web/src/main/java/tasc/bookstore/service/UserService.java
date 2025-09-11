@@ -1,6 +1,7 @@
 package tasc.bookstore.service;
 
 import tasc.bookstore.dto.request.UserCreationRequest;
+import tasc.bookstore.dto.request.UserPasswordUpdateRequest;
 import tasc.bookstore.dto.request.UserUpdateRequest;
 import tasc.bookstore.dto.response.UserResponse;
 
@@ -11,6 +12,7 @@ public interface UserService {
     UserResponse registerCustomer(UserCreationRequest request);
     UserResponse updateUser(Long id, UserUpdateRequest request);
     UserResponse updateMyInfo(UserUpdateRequest request);
+    UserResponse updateMyPassword(UserPasswordUpdateRequest request);
     List<UserResponse> getUsers();
     UserResponse getUser(Long id);
     void deleteUser(Long id);

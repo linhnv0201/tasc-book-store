@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import tasc.bookstore.dto.request.UserCreationRequest;
+import tasc.bookstore.dto.request.UserPasswordUpdateRequest;
 import tasc.bookstore.dto.request.UserUpdateRequest;
 import tasc.bookstore.dto.response.ApiResponse;
 import tasc.bookstore.dto.response.UserResponse;
@@ -84,6 +85,14 @@ public class UserController {
         ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
         apiResponse.setResult(userService.updateMyInfo(request));
         apiResponse.setMessage("Successfully updated your info");
+        return apiResponse;
+    }
+
+    @PutMapping("/update-password")
+    public ApiResponse<UserResponse> updatePassword(@RequestBody @Valid UserPasswordUpdateRequest request) {
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.updateMyPassword(request));
+        apiResponse.setMessage("Successfully updated your password");
         return apiResponse;
     }
 }

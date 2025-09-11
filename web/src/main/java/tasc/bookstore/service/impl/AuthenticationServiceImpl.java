@@ -54,6 +54,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Value("${jwt.signerKey}")
     protected String SIGNER_KEY;
 
+
     @NonFinal
     @Value("${jwt.valid-duration}")
     protected Long VALID_DURATION;
@@ -64,23 +65,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public IntrospectResponse introspect(IntrospectRequest request) throws ParseException, JOSEException {
-        var token = request.getToken();
+        String token = request.getToken();
         boolean isValid = true;
         try {
             verifyToken(token, false);
         } catch (AppException e) {
             isValid = false;
         }
-        return IntrospectResponse.builder()
-                .valid(isValid)
-                .build();
-
+        return IntrospectResponse.builder().valid(isValid).build();
     }
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         //BCrypt khi mã hóa mật khẩu sẽ thực hiện nhiều vòng (rounds) hashing.
         //Số vòng = 2^strength.
@@ -88,8 +85,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
 
-        if (!authenticated)
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if (!authenticated) throw new AppException(ErrorCode.WRONG_PASSWORD);
 
         String token;
         try {
@@ -98,24 +94,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new RuntimeException(e);
         }
 
-        return AuthenticationResponse.builder()
-                .token(token)
-                .authenticated(true)
-                .build();
-
+        return AuthenticationResponse.builder().token(token).authenticated(true).build();
     }
 
     @Override
     public void logout(LogoutRequest request) throws ParseException, JOSEException {
         try {
             //chưa hiểu lắm vì sao lại true
-            var signedToken = verifyToken(request.getToken(), true);
+            SignedJWT signedToken = verifyToken(request.getToken(), true);
             String jti = signedToken.getJWTClaimsSet().getJWTID();
             Date expiryTime = signedToken.getJWTClaimsSet().getExpirationTime();
-            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                    .id(jti)
-                    .expireTime(expiryTime)
-                    .build();
+            InvalidatedToken invalidatedToken = InvalidatedToken.builder().id(jti).expireTime(expiryTime).build();
 
             invalidatedTokenRepository.save(invalidatedToken);
         } catch (AppException e) {
@@ -125,26 +114,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
-        var signedJWT = verifyToken(request.getToken(), true);
-        var jti = signedJWT.getJWTClaimsSet().getJWTID();
+        SignedJWT signedJWT = verifyToken(request.getToken(), true);
+        String jti = signedJWT.getJWTClaimsSet().getJWTID();
         Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
-        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                .id(jti)
-                .expireTime(expiryTime)
-                .build();
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder().id(jti).expireTime(expiryTime).build();
 
         invalidatedTokenRepository.save(invalidatedToken);
 
-        var username = signedJWT.getJWTClaimsSet().getSubject();
-        var user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        String username = signedJWT.getJWTClaimsSet().getSubject();
+        User user = userRepository.findByEmail(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        var token = generateToken(user);
-        return AuthenticationResponse.builder()
-                .token(token)
-                .authenticated(true)
-                .build();
+        String token = generateToken(user);
+        return AuthenticationResponse.builder().token(token).authenticated(true).build();
 
     }
 
@@ -153,12 +135,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         SignedJWT signedJWT = SignedJWT.parse(token);
 
-        Date expiryTime = (isRefresh)
-                ? new Date(signedJWT.getJWTClaimsSet().getIssueTime()
-                .toInstant().plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS).toEpochMilli())
+        Date expiryTime = (isRefresh) ?
+                new Date(signedJWT.getJWTClaimsSet().getIssueTime().toInstant().plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS).toEpochMilli())
                 : signedJWT.getJWTClaimsSet().getExpirationTime();
 
-        var verifired = signedJWT.verify(verifier);
+        boolean verifired = signedJWT.verify(verifier);
 
         if (!(verifired && expiryTime.after(new Date()))) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
@@ -173,39 +154,37 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     String generateToken(User user) throws JOSEException {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+//        System.out.println(header); // in ra: {"alg":"HS512"}
 
-        JWTClaimsSet jwtClaimSet = new JWTClaimsSet.Builder()
-                .subject(user.getEmail())
-                .issuer("vulinh")
-                .issueTime(new Date())
-                .expirationTime(new Date(
-                        Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()
-                ))
-                .jwtID(UUID.randomUUID().toString())
-                .claim("scope", buildScope(user))
-                .build();
+        JWTClaimsSet jwtClaimSet = new JWTClaimsSet.Builder().subject(user.getEmail()).issuer("vulinh").issueTime(new Date()).expirationTime(new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli())).jwtID(UUID.randomUUID().toString()).claim("role", buildScope(user)).build();
+//        in ra: {"sub":"king","scope":"EMPLOYEE CUSTOMER ADMIN","iss":"vulinh"
+//                ,"exp":1757582258,"iat":1757578658,"jti":"48a34366-d69d-4e1c-aff3-7f2579ecc165"}
+//        System.out.println(jwtClaimSet);
 
+        // chuyển từ dạng JWTClaimSet sang JSONObject
         Payload payload = new Payload(jwtClaimSet.toJSONObject());
 
+
+//        JSON Web Signature Object
+//        Đại diện cho một JWT đã ký (Signed JWT) trong thư viện Nimbus
         JWSObject jwsObject = new JWSObject(header, payload);
+//        System.out.println(jwsObject); //in ra: com.nimbusds.jose.JWSObject@1b9bba97
 
         try {
             jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
+            System.out.println(jwsObject.serialize());
             return jwsObject.serialize();
         } catch (JOSEException e) {
             log.error("Cannot create token", e);
             throw new RuntimeException(e);
         }
-
     }
 
+    //      buildScope dùng để tạo ra chuỗi “scope” cho JWT dựa trên role của user.
+//      Scope thường được dùng trong JWT để xác định quyền hạn / permission của người dùng.
     private String buildScope(User user) {
         StringJoiner stringJoiner = new StringJoiner(" ");
-        if (!CollectionUtils.isEmpty(user.getRole()))
-            user.getRole().forEach(stringJoiner::add);
-
+        if (!CollectionUtils.isEmpty(user.getRole())) user.getRole().forEach(stringJoiner::add);
         return stringJoiner.toString();
     }
-
-
 }

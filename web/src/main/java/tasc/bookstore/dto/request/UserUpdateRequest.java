@@ -15,11 +15,11 @@ import java.util.Set;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserUpdateRequest {
 
-    @Size(min = 4, message = "Password phải có ít nhất 4 ký tự")
-    @Nullable
-    String password;
+//    @Size(min = 4, message = "Password phải có ít nhất 4 ký tự")
+//    @Nullable
+//    String password;
     String fullname;
     String phone;
     String address;
-    Set<String> role;
+//    Set<String> role;
 }

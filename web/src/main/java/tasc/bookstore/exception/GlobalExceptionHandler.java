@@ -1,6 +1,5 @@
 package tasc.bookstore.exception;
 
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -19,29 +18,30 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(apiResponse);
     }
 
-//    @ExceptionHandler(value = Exception.class)
+    @ExceptionHandler(value = MethodArgumentNotValidException.class)
+    ResponseEntity<ApiResponse> handlingMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+        ErrorCode errorCode = ErrorCode.INVALID_PASSWORD;
+
+        String enumKey = exception.getFieldError().getDefaultMessage();
+
+        try {
+            errorCode = ErrorCode.valueOf(enumKey);
+        } catch (IllegalArgumentException e){
+
+        }
+        ApiResponse apiResponse = new ApiResponse();
+
+        apiResponse.setCode(errorCode.getCode());
+        apiResponse.setMessage(errorCode.getMessage());
+        return ResponseEntity.badRequest().body(apiResponse);
+    }
+
+    //    @ExceptionHandler(value = Exception.class)
 //    ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException exception) {
 //        ApiResponse apiResponse = new ApiResponse();
 //
 //        apiResponse.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
 //        apiResponse.setMessage(exception.getMessage());
-//        return ResponseEntity.badRequest().body(apiResponse);
-//    }
-//    @ExceptionHandler(value = MethodArgumentNotValidException.class)
-//    ResponseEntity<ApiResponse> handlingMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
-//        String enumKey = exception.getFieldError().getDefaultMessage();
-//
-//        ErrorCode errorCode = ErrorCode.INVALID_KEY;
-//
-//        try {
-//            errorCode = ErrorCode.valueOf(enumKey);
-//        } catch (IllegalArgumentException e){
-//
-//        }
-//        ApiResponse apiResponse = new ApiResponse();
-//
-//        apiResponse.setCode(errorCode.getCode());
-//        apiResponse.setMessage(errorCode.getMessage());
 //        return ResponseEntity.badRequest().body(apiResponse);
 //    }
 }

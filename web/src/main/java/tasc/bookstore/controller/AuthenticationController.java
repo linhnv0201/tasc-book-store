@@ -32,9 +32,6 @@ public class AuthenticationController {
         AuthenticationResponse result = authenticationService.authenticate(request);
         apiResponse.setResult(result);
         return apiResponse;
-//        return ApiResponse.<AuthenticationResponse>builder()
-//                .result(result)
-//                .build();
     }
 
     @PostMapping("/introspect")
