@@ -5,5 +5,5 @@ import tasc.bookstore.entity.Order;
 import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    List<Order> findByCustomerId(Long customerId);
+    boolean existsByCode(String code);
 }

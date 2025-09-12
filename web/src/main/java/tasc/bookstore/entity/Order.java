@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -43,8 +44,10 @@ public class Order {
     @Column(columnDefinition = "TEXT")
     String note;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    List<OrderItem> items;
+//    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+//    List<OrderItem> items;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> items = new ArrayList<>(); // <-- quan trọng
 
     public enum Status {
         PENDING, PAID, SHIPPED, CANCELLED

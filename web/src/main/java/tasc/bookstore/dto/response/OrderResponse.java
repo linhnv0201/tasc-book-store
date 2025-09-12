@@ -1,0 +1,22 @@
+package tasc.bookstore.dto.response;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class OrderResponse {
+    String code;
+    List<OrderItemResponse> items;
+    BigDecimal totalAmount;
+    LocalDateTime createdAt;
+    String status;
+}
