@@ -43,7 +43,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
 
         CategoryResponse categoryResponse = new CategoryResponse();
-        categoryResponse.setCategoryName(category.getName());
+        categoryResponse.setName(category.getName());
         return categoryResponse;
     }
 
@@ -60,7 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.save(category);
 
         CategoryResponse categoryResponse = new CategoryResponse();
-        categoryResponse.setCategoryName(category.getName());
+        categoryResponse.setName(category.getName());
         return categoryResponse;
     }
 
@@ -80,7 +80,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         for (Category category : categories) {
             CategoryResponse response = new CategoryResponse();
-            response.setCategoryName(category.getName());
+            response.setName(category.getName());
             categoriesResponse.add(response);
         }
         return categoriesResponse;

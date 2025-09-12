@@ -1,12 +1,14 @@
 package tasc.bookstore.service;
 
+import tasc.bookstore.dto.request.CartItemRequest;
+import tasc.bookstore.dto.response.CartResponse;
 import tasc.bookstore.entity.Cart;
 import tasc.bookstore.entity.User;
 
 public interface CartService {
 
-    Cart getCart();
-    void addToCart( Long productId, int quantity);
+    CartResponse getCart();
+    void addToCart(CartItemRequest request);
     void removeFromCart(Long productId);
-    void updateCartItem(Long productId, int quantity);
+    void updateCartItem(CartItemRequest request);
 }

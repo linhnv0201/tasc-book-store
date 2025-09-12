@@ -27,6 +27,7 @@ public class Cart {
     @Column(nullable = false, updatable = false)
     LocalDateTime createdAt = LocalDateTime.now();
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
+    // phải thêm orphanRemoval = true mới xóa đc item, tìm hiểu sau
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     List<CartItem> items;
 }

@@ -22,6 +22,7 @@ public enum ErrorCode {
     PRODUCT_EXISTED(1003, "Product already existed"),
     PRODUCT_NOT_EXIST(1003, "Product not existed"),
     PRODUCT_NOT_FOUND(1003, "Product not found"),
+    NEGATIVE_QUANTITY(1004, "Negative quantity"),
     ;
     int code;
     String message;

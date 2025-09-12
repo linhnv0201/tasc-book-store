@@ -74,8 +74,6 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         userMapper.toUpdateUser(user, request);
-//        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-//        user.setPassword(passwordEncoder.encode(request.getPassword()));
         return userMapper.toUserResponse(userRepository.save(user));
     }
 

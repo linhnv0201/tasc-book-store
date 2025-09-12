@@ -5,7 +5,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import tasc.bookstore.entity.Cart;
+import tasc.bookstore.dto.request.CartItemRequest;
+import tasc.bookstore.dto.response.ApiResponse;
+import tasc.bookstore.dto.response.CartResponse;
+import tasc.bookstore.exception.AppException;
+import tasc.bookstore.exception.ErrorCode;
 import tasc.bookstore.service.CartService;
 
 @Slf4j
@@ -17,22 +21,47 @@ public class CartController {
     CartService cartService;
 
     @GetMapping
-    public Cart getCart() {
-        return cartService.getCart();
+    public ApiResponse<CartResponse> getCart() {
+        ApiResponse<CartResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(cartService.getCart());
+        return apiResponse;
     }
 
     @PostMapping("/add")
-    public void addToCart( Long productId, int quantity){
-        cartService.addToCart(productId, quantity);
-    };
+    public ApiResponse<Void> addToCart(@RequestBody CartItemRequest request) {
+        if (request.getProductId() == null) {
+            throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+        }
+        if (request.getQuantity() == null || request.getQuantity() <= 0) {
+            throw new AppException(ErrorCode.NEGATIVE_QUANTITY);
+        }
 
-    @PostMapping("/remove")
-    public void removeFromCart( Long productId){
-        cartService.removeFromCart(productId);
+        cartService.addToCart(request);
+
+        ApiResponse<Void> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Add to cart successful");
+        return apiResponse;
     }
 
-    @PostMapping("/update")
-    public void updateCartItem( Long productId, int quantity){
-        cartService.updateCartItem(productId, quantity);
+    @PutMapping("/update")
+    public ApiResponse<Void> updateCartItem(@RequestBody CartItemRequest request){
+        if (request.getProductId() == null) {
+            throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+        }
+        if (request.getQuantity() == null || request.getQuantity() <= 0) {
+            throw new AppException(ErrorCode.NEGATIVE_QUANTITY);
+        }
+        ApiResponse<Void> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Update cart successful");
+        cartService.updateCartItem(request);
+        return apiResponse;
+    }
+
+    @DeleteMapping("/remove/{productId}")
+    public ApiResponse<Void> removeFromCart(@PathVariable Long productId){
+        cartService.removeFromCart(productId);
+        ApiResponse<Void> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Remove from cart successful");
+        return apiResponse;
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
 import tasc.bookstore.dto.request.IntrospectRequest;
+import tasc.bookstore.dto.response.IntrospectResponse;
 import tasc.bookstore.service.AuthenticationService;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -31,7 +32,7 @@ public class CustomJwtDecoder implements JwtDecoder {
     public Jwt decode(String token) throws JwtException {
 
         try {
-            var response = authenticationService.introspect(IntrospectRequest.builder()
+            IntrospectResponse response = authenticationService.introspect(IntrospectRequest.builder()
                     .token(token)
                     .build());
 

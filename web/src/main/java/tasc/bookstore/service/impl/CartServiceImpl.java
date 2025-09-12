@@ -7,16 +7,22 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import tasc.bookstore.dto.request.CartItemRequest;
+import tasc.bookstore.dto.response.CartResponse;
 import tasc.bookstore.entity.Cart;
 import tasc.bookstore.entity.CartItem;
 import tasc.bookstore.entity.Product;
 import tasc.bookstore.entity.User;
 import tasc.bookstore.exception.AppException;
 import tasc.bookstore.exception.ErrorCode;
+import tasc.bookstore.mapper.CartMapper;
 import tasc.bookstore.repository.CartRepository;
 import tasc.bookstore.repository.ProductRepository;
 import tasc.bookstore.repository.UserRepository;
 import tasc.bookstore.service.CartService;
+
+import java.math.BigDecimal;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -26,20 +32,46 @@ public class CartServiceImpl implements CartService {
     UserRepository userRepository;
     CartRepository cartRepository;
     ProductRepository productRepository;
-
+    CartMapper cartMapper;
 
     @Override
-    //traánh tạo 1 cart trùng cho nhiều user
-    @Transactional
-    public Cart getCart() {
-        // Lấy user đang login
+    @Transactional // tránh tạo 1 cart trùng cho nhiều user 1 lúc
+    public CartResponse getCart() {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        // Lấy cart của user
+        Cart cart = cartRepository.findByCustomerId(user.getId())
+                .orElseGet(() -> {
+                    Cart newCart = new Cart();
+                    newCart.setCustomer(user);
+                    return cartRepository.save(newCart);
+                });
+
+        CartResponse response = cartMapper.toCartResponse(cart);
+
+        // Tính totalPrice
+        BigDecimal total = cart.getItems().stream()
+                .map(item -> item.getProduct().getPrice()
+                        .multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        response.setTotalPrice(total);
+        response.setCustomerName(user.getFullname());
+
+        return response;
+    }
+
+    @Transactional
+    public Cart getCartEntity() {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
         return cartRepository.findByCustomerId(user.getId())
                 .orElseGet(() -> {
                     Cart newCart = new Cart();
@@ -48,60 +80,64 @@ public class CartServiceImpl implements CartService {
                 });
     }
 
-
     @Override
     @Transactional
-    public void addToCart(Long productId, int quantity) {
-        Cart cart = getCart(); // lấy cart của user đang login
+    public void addToCart(CartItemRequest request) {
+        Cart cart = getCartEntity();
 
-        // Kiểm tra xem sản phẩm đã có trong cart chưa
-        CartItem item = cart.getItems().stream()
-                .filter(ci -> ci.getProduct().getId().equals(productId))
-                .findFirst()
-                .orElse(null);
+        Product product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+        Optional<CartItem> itemOpt = cart.getItems().stream()
+                .filter(ci -> ci.getProduct().getId().equals(request.getProductId()))
+                .findFirst();
 
-        if (item != null) {
-            // Nếu có rồi thì tăng số lượng
-            item.setQuantity(item.getQuantity() + quantity);
-        } else {
-            // Nếu chưa có thì tạo mới CartItem
-            item = new CartItem();
-            item.setCart(cart);
-            item.setProduct(product);
-            item.setQuantity(quantity);
-            cart.getItems().add(item);
-        }
+        itemOpt.ifPresentOrElse(
+                item -> item.setQuantity(item.getQuantity() + request.getQuantity()),
+                () -> {
+                    var item = new CartItem();
+                    item.setCart(cart);
+                    item.setProduct(product);
+                    item.setQuantity(request.getQuantity());
+                    cart.getItems().add(item);
+                }
+        );
 
         cartRepository.save(cart);
     }
 
     @Override
     @Transactional
-    public void updateCartItem(Long productId, int quantity) {
-        Cart cart = getCart();
+    public void updateCartItem(CartItemRequest request) {
+        if (request.getProductId() == null) {
+            throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+        }
+        if (request.getQuantity() <= 0) {
+            throw new AppException(ErrorCode.NEGATIVE_QUANTITY);
+        }
 
+        Cart cart = getCartEntity();
+
+        // Tìm item trong cart
         CartItem item = cart.getItems().stream()
-                .filter(ci -> ci.getProduct().getId().equals(productId))
+                .filter(ci -> ci.getProduct().getId().equals(request.getProductId()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
 
-        if (quantity <= 0) {
-            // nếu số lượng <= 0 thì xóa item
-            cart.getItems().remove(item);
+        if (request.getQuantity() <= 0) {
+            cart.getItems().remove(item); // xóa nếu quantity <= 0
         } else {
-            item.setQuantity(quantity);
+            item.setQuantity(request.getQuantity()); // cập nhật quantity
         }
 
         cartRepository.save(cart);
     }
+
 
     @Override
     @Transactional
     public void removeFromCart(Long productId) {
-        Cart cart = getCart();
+        Cart cart = getCartEntity();
         cart.getItems().removeIf(ci -> ci.getProduct().getId().equals(productId));
         cartRepository.save(cart);
     }

@@ -54,7 +54,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Value("${jwt.signerKey}")
     protected String SIGNER_KEY;
 
-
     @NonFinal
     @Value("${jwt.valid-duration}")
     protected Long VALID_DURATION;
@@ -75,9 +74,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return IntrospectResponse.builder().valid(isValid).build();
     }
 
+    //AuthenticationRequest chính là thông tin đăng nhập(email + pass)
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         //BCrypt khi mã hóa mật khẩu sẽ thực hiện nhiều vòng (rounds) hashing.
         //Số vòng = 2^strength.
