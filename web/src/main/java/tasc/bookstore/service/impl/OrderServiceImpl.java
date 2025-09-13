@@ -95,6 +95,14 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
+    @Override
+    public List<OrderResponse> getMyOrders() {
+        List<Order> orders = orderRepository.findByCustomerId(getCurrentUser().getId());
+        return orders.stream()
+                .map(orderMapper::toOrderResponse)
+                .toList();
+    }
+
     private User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByEmail(email)

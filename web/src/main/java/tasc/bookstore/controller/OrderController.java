@@ -28,11 +28,18 @@ public class OrderController {
         return apiResponse;
     }
 
+    @GetMapping("/mine")
+    public ApiResponse<List<OrderResponse>> getMyOrders(){
+        ApiResponse<List<OrderResponse>> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("All my orders");
+        apiResponse.setResult(orderService.getMyOrders());
+        return apiResponse;
+    }
+
     @PostMapping
     public ApiResponse<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest) {
         ApiResponse<OrderResponse> apiResponse = new ApiResponse<>();
         apiResponse.setResult(orderService.createOrder(orderRequest));
         return apiResponse;
     }
-
 }

@@ -155,14 +155,24 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     String generateToken(User user) throws JOSEException {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
-//        System.out.println(header); // in ra: {"alg":"HS512"}
+//        System.out.println(header); // in ra: {"alg":"HS512"} ("alg": thuật toán ký, ở đây là HS512 (HMAC + SHA-512))
 
-        JWTClaimsSet jwtClaimSet = new JWTClaimsSet.Builder().subject(user.getEmail()).issuer("vulinh").issueTime(new Date()).expirationTime(new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli())).jwtID(UUID.randomUUID().toString()).claim("role", buildScope(user)).build();
+//        đại diện phần payload
+        JWTClaimsSet jwtClaimSet = new JWTClaimsSet.Builder()
+                .subject(user.getEmail())
+                .issuer("vulinh")
+                .issueTime(new Date())
+                .expirationTime(new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
+                .jwtID(UUID.randomUUID().toString())
+                .claim("role", buildScope(user))
+                .build();
 //        in ra: {"sub":"king","scope":"EMPLOYEE CUSTOMER ADMIN","iss":"vulinh"
 //                ,"exp":1757582258,"iat":1757578658,"jti":"48a34366-d69d-4e1c-aff3-7f2579ecc165"}
 //        System.out.println(jwtClaimSet);
 
-        // chuyển từ dạng JWTClaimSet sang JSONObject
+//         chuyển từ dạng JWTClaimSet sang JSONObject
+//        Payload là object mà Nimbus dùng để đưa dữ liệu payload vào JWSObject.
+//        jwtClaimSet.toJSONObject() → convert claims thành JSONObject.
         Payload payload = new Payload(jwtClaimSet.toJSONObject());
 
 
@@ -173,7 +183,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         try {
             jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
-            System.out.println(jwsObject.serialize());
+//            System.out.println(jwsObject.serialize());
             return jwsObject.serialize();
         } catch (JOSEException e) {
             log.error("Cannot create token", e);

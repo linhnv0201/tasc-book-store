@@ -13,13 +13,11 @@ import tasc.bookstore.dto.request.UserCreationRequest;
 import tasc.bookstore.dto.request.UserPasswordUpdateRequest;
 import tasc.bookstore.dto.request.UserUpdateRequest;
 import tasc.bookstore.dto.response.UserResponse;
-import tasc.bookstore.entity.Cart;
 import tasc.bookstore.entity.User;
 import tasc.bookstore.enums.Role;
 import tasc.bookstore.exception.AppException;
 import tasc.bookstore.exception.ErrorCode;
 import tasc.bookstore.mapper.UserMapper;
-import tasc.bookstore.repository.CartRepository;
 import tasc.bookstore.repository.UserRepository;
 import tasc.bookstore.service.UserService;
 

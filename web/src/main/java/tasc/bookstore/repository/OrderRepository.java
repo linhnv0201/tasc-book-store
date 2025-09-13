@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
     boolean existsByCode(String code);
+    List<Order> findByCustomerId(Long customerId);
 }
