@@ -51,4 +51,9 @@ public class Product {
 
     @Column(nullable = false, updatable = false)
     LocalDateTime createdAt = LocalDateTime.now();
+
+    // 👇 Thêm cột quản lý hiển thị
+    @Builder.Default
+    @Column(nullable = false)
+    Boolean isVisible = false;
 }

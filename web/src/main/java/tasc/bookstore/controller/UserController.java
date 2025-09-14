@@ -16,6 +16,7 @@ import tasc.bookstore.dto.response.UserResponse;
 import tasc.bookstore.service.UserService;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -79,6 +80,11 @@ public class UserController {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.getMyInfo())
                 .build();
+    }
+
+    @GetMapping("/myInfoJDBC")
+    public Map<String, Object> getMyInfoJDBC() {
+        return userService.getMyInfoJDBC();
     }
 
     // Update User

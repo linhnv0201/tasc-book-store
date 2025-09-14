@@ -36,6 +36,7 @@ public interface ProductMapper {
         response.setStock(product.getStock());
         response.setSoldQuantity(product.getSoldQuantity());
         response.setCreatedAt(product.getCreatedAt());
+        response.setIsVisible(product.getIsVisible());
 
         // Map categories -> CategoryResponse
         if (product.getCategories() != null) {

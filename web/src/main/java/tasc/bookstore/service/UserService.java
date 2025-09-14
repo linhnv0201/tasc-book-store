@@ -6,6 +6,7 @@ import tasc.bookstore.dto.request.UserUpdateRequest;
 import tasc.bookstore.dto.response.UserResponse;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
     UserResponse createUser(UserCreationRequest request);
@@ -17,4 +18,5 @@ public interface UserService {
     UserResponse getUser(Long id);
     void deleteUser(Long id);
     UserResponse getMyInfo();
+    Map<String, Object> getMyInfoJDBC();
 }

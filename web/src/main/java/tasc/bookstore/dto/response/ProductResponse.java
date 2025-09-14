@@ -25,4 +25,5 @@ public class ProductResponse {
     Integer stock;
     Integer soldQuantity;
     LocalDateTime createdAt;
+    Boolean isVisible;
 }

@@ -26,6 +26,6 @@ public class ProductUpdateRequest {
     @DecimalMin(value = "0.0", inclusive = true, message = "Cost must be >= 0")
     BigDecimal cost;
 
-//    @Min(value = 0, message = "Stock must be >= 0")
-//    Integer stock;
+    // Cho phép admin chỉnh sửa hiển thị sản phẩm
+    Boolean isVisible;    // Cho phép admin chỉnh sửa hiển thị sản phẩm
 }
