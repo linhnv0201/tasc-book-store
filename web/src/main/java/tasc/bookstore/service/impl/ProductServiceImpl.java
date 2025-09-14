@@ -4,6 +4,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tasc.bookstore.dto.request.ProductCreationRequest;
@@ -20,9 +24,7 @@ import tasc.bookstore.service.ProductService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -32,6 +34,7 @@ public class ProductServiceImpl implements ProductService {
     ProductRepository productRepository;
     ProductMapper productMapper;
     CategoryRepository categoryRepository;
+    NamedParameterJdbcTemplate jdbcTemplate;
 
     @Override
     public ProductResponse createProduct(ProductCreationRequest request) {
@@ -102,4 +105,131 @@ public class ProductServiceImpl implements ProductService {
                 () -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
         productRepository.delete(product);
     }
+
+    @Override
+    public Map<String, Object> getProductByIdNamedJDBC(Long id) {
+        String sql = """
+        SELECT p.id AS product_id,
+               p.name AS product_name,
+               p.price,
+               p.cost,
+               c.name AS category_name
+        FROM products p
+        LEFT JOIN product_categories pc ON p.id = pc.product_id
+        LEFT JOIN categories c ON pc.category_id = c.id
+        WHERE p.id = :id
+    """;
+
+        Map<String, Object> params = Map.of("id", id);
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params);
+
+        if (rows.isEmpty()) {
+            return null; // hoặc throw new AppException(...)
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> firstRow = rows.get(0);
+        result.put("id", firstRow.get("product_id"));
+        result.put("name", firstRow.get("product_name"));
+        result.put("price", firstRow.get("price"));
+        result.put("cost", firstRow.get("cost"));
+
+        // Gom danh sách category
+        List<String> categories = rows.stream()
+                .map(r -> (String) r.get("category_name"))
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        result.put("categories", categories);
+
+        return result;
+    }
+
+    @Override
+    public List<Map<String, Object>> getProductsByCategoryOrderByPriceDesc(Long categoryId) {
+        String sql = "CALL get_products_search_by_category_id_and_order_by_price_desc(:categoryId)";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("categoryId", categoryId);
+
+        return jdbcTemplate.queryForList(sql, params);
+    }
+
+    @Override
+    public List<Map<String, Object>> getProductsByAuthor(String author) {
+        String sql = """
+        SELECT 
+            p.id AS product_id,
+            p.name AS product_name,
+            p.author,
+            p.description,
+            p.price,
+            p.stock,
+            c.name AS category_name
+        FROM products p
+        LEFT JOIN product_categories pc ON p.id = pc.product_id
+        LEFT JOIN categories c ON pc.category_id = c.id
+        WHERE p.author = :author
+        ORDER BY p.name ASC
+        """;
+
+        Map<String, Object> params = Map.of("author", author);
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params);
+
+        // Map<ProductId, ProductInfo + Set<CategoryName>>
+        Map<Long, Map<String, Object>> productMap = new LinkedHashMap<>();
+
+        for (Map<String, Object> row : rows) {
+            Long productId = ((Number) row.get("product_id")).longValue();
+
+            Map<String, Object> productEntry = productMap.get(productId);
+            if (productEntry == null) {
+                productEntry = new HashMap<>();
+                productEntry.put("product_id", productId);
+                productEntry.put("product_name", row.get("product_name"));
+                productEntry.put("author", row.get("author"));
+                productEntry.put("description", row.get("description"));
+                productEntry.put("price", row.get("price"));
+                productEntry.put("stock", row.get("stock"));
+                productEntry.put("categories", new HashSet<String>());
+                productMap.put(productId, productEntry);
+            }
+
+            // Thêm category name vào set
+            String catName = (String) row.get("category_name");
+            if (catName != null) {
+                ((Set<String>) productEntry.get("categories")).add(catName);
+            }
+        }
+
+        return new ArrayList<>(productMap.values());
+    }
+
+
+    // test Specification + paging
+    @Override
+    public Page<ProductResponse> searchByAuthorAndPriceRange(String author
+            , BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
+        return productRepository.findAll(
+                hasAuthor(author).and(hasPriceBetween(minPrice, maxPrice)),
+                pageable
+        ).map(productMapper::toProductResponse);
+    }
+
+    // ================== Specification tạm trong service ==================
+    private static Specification<Product> hasAuthor(String author) {
+        return (root, query, builder) ->
+                author == null ? null :
+                        builder.like(builder.lower(root.get("author")), "%" + author.toLowerCase() + "%");
+    }
+
+    private static Specification<Product> hasPriceBetween(BigDecimal minPrice, BigDecimal maxPrice) {
+        return (root, query, builder) -> {
+            if (minPrice == null && maxPrice == null) return null;
+            if (minPrice != null && maxPrice != null) return builder.between(root.get("price"), minPrice, maxPrice);
+            if (minPrice != null) return builder.greaterThanOrEqualTo(root.get("price"), minPrice);
+            return builder.lessThanOrEqualTo(root.get("price"), maxPrice);
+        };
+    }
+
 }

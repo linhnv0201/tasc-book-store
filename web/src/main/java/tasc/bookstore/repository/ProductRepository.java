@@ -1,13 +1,17 @@
 package tasc.bookstore.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
 import tasc.bookstore.entity.Product;
 import java.util.List;
 
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
     boolean existsByName(String name);
 
 //Các cách truy vấn lấy list product by categoryId
@@ -43,4 +47,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
         //Query phức tạp, join nhiều bảng, subquery, function DB-specific
         //Khi JPQL không hỗ trợ
         //Muốn tối ưu SQL để performance cao
+
+     Page<Product> findAll(Specification<Product> spec, Pageable pageable);
+
 }

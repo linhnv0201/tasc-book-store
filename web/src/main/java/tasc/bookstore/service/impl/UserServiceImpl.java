@@ -36,7 +36,6 @@ public class UserServiceImpl implements UserService {
     UserRepository userRepository;
     UserMapper userMapper;
     JdbcTemplate jdbcTemplate;
-    NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Override
     public UserResponse createUser(UserCreationRequest request) {
@@ -104,7 +103,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getUsers() {
         log.info("getUsers()");
         return userRepository.findAll().stream()
@@ -142,5 +141,10 @@ public class UserServiceImpl implements UserService {
 
         return jdbcTemplate
                 .queryForMap("select email, fullname, phone from users where email = ? ", email);
+    }
+
+    @Override
+    public List<UserResponse> getUsersByFullname(String fullname) {
+        return userRepository.findUsersByFullname(fullname);
     }
 }

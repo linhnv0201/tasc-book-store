@@ -87,6 +87,15 @@ public class UserController {
         return userService.getMyInfoJDBC();
     }
 
+    @GetMapping("/fullname/{fullname}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<List<UserResponse>> getUsersByFullname(@PathVariable String fullname) {
+        ApiResponse<List<UserResponse>> response = new ApiResponse<>();
+        response.setMessage("Successfully retrieved users by fullname");
+        response.setResult(userService.getUsersByFullname(fullname));
+        return response;
+    }
+
     // Update User
     @PutMapping("/myInfo")
     public ApiResponse<UserResponse> updateMyInfo(@RequestBody @Valid UserUpdateRequest request) {

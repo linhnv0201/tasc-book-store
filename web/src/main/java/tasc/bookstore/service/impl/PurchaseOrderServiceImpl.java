@@ -10,10 +10,7 @@ import org.springframework.stereotype.Service;
 import tasc.bookstore.dto.request.PurchaseOrderCreationRequest;
 import tasc.bookstore.dto.request.PurchaseOrderItemRequest;
 import tasc.bookstore.dto.response.PurchaseOrderResponse;
-import tasc.bookstore.entity.Product;
-import tasc.bookstore.entity.PurchaseOrder;
-import tasc.bookstore.entity.PurchaseOrderItem;
-import tasc.bookstore.entity.User;
+import tasc.bookstore.entity.*;
 import tasc.bookstore.exception.AppException;
 import tasc.bookstore.exception.ErrorCode;
 import tasc.bookstore.mapper.PurchaseOrderMapper;
@@ -54,7 +51,9 @@ public class PurchaseOrderServiceImpl implements PurchasrOrderService {
         purchaseOrder.setCreatedBy(getCurrentUser());
         purchaseOrder.setNote(request.getNote());
         purchaseOrder.setCode(generatePurchaseOrderCode());
-        purchaseOrder.setSupplier(supplierRepository.findById(request.getSupplierId()).orElse(null));
+        Supplier supplier = supplierRepository.findById(request.getSupplierId())
+                .orElseThrow(() -> new AppException(ErrorCode.SUPPLIER_NOT_FOUND));
+        purchaseOrder.setSupplier(supplier);
 
         BigDecimal total = BigDecimal.ZERO;
 

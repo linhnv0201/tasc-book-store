@@ -19,4 +19,6 @@ public interface UserService {
     void deleteUser(Long id);
     UserResponse getMyInfo();
     Map<String, Object> getMyInfoJDBC();
+//    List<UserResponse> getUsersByRole(String roleName);
+    List<UserResponse> getUsersByFullname(String fullname);
 }
