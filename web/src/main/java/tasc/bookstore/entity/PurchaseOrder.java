@@ -5,6 +5,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -32,28 +33,16 @@ public class PurchaseOrder {
     @JoinColumn(name = "created_by")
     User createdBy;
 
-    @ManyToOne
-    @JoinColumn(name = "approved_by")
-    User approvedBy;
-
     @Column(nullable = false, updatable = false)
     LocalDateTime createdAt = LocalDateTime.now();
-
-    LocalDateTime approvedAt;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    Status status;
 
     BigDecimal totalAmount;
 
     @Column(columnDefinition = "TEXT")
     String note;
 
-    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL)
-    List<PurchaseOrderItem> items;
+    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PurchaseOrderItem> items = new ArrayList<>();
 
-    public enum Status {
-        PENDING, APPROVED, CANCELLED
-    }
+
 }

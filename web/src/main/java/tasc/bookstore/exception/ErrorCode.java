@@ -24,6 +24,7 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND(1003, "Product not found"),
     NEGATIVE_QUANTITY(1004, "Negative quantity"),
     EMPTY_ORDER(1004, "Empty order"),
+    ORDER_NOT_FOUND(1004, "Order not found"),
     ;
     int code;
     String message;

@@ -41,7 +41,8 @@ public class Product {
     @Column(nullable = false)
     BigDecimal price;
 
-    BigDecimal cost;
+    @Builder.Default
+    BigDecimal cost = BigDecimal.ZERO;
 
     @Builder.Default
     Integer stock = 0;

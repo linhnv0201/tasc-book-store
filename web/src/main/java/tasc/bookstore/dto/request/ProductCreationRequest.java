@@ -28,7 +28,7 @@ public class ProductCreationRequest {
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     BigDecimal price;
 
-    @DecimalMin(value = "0.0", inclusive = true, message = "Cost must be >= 0")
-    BigDecimal cost;
+//    @DecimalMin(value = "0.0", inclusive = true, message = "Cost must be >= 0")
+//    BigDecimal cost;
 
 }

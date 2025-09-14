@@ -18,6 +18,7 @@ import tasc.bookstore.repository.CategoryRepository;
 import tasc.bookstore.repository.ProductRepository;
 import tasc.bookstore.service.ProductService;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +41,7 @@ public class ProductServiceImpl implements ProductService {
         // Chuyển request thành Product entity (không set categories trước)
         Product product = productMapper.toCreateProduct(request);
         product.setCreatedAt(LocalDateTime.now());
+        product.setCost(BigDecimal.ZERO);
 
         // Lấy danh sách Category entity từ categoryIds
         Set<Category> categoryEntities = new HashSet<>(categoryRepository.findAllById(request.getCategoryIds()));

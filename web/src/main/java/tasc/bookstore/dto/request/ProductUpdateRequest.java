@@ -23,8 +23,8 @@ public class ProductUpdateRequest {
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     BigDecimal price;   // validate chỉ khi có giá mới
 
-    @DecimalMin(value = "0.0", inclusive = true, message = "Cost must be >= 0")
-    BigDecimal cost;
+//    @DecimalMin(value = "0.0", inclusive = true, message = "Cost must be >= 0")
+//    BigDecimal cost;
 
     // Cho phép admin chỉnh sửa hiển thị sản phẩm
     Boolean isVisible;    // Cho phép admin chỉnh sửa hiển thị sản phẩm

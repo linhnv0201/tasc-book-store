@@ -30,7 +30,5 @@ public class PurchaseOrderItem {
     @Column(nullable = false)
     Integer quantity;
 
-    BigDecimal unitPrice;
-
     BigDecimal cost;
 }
