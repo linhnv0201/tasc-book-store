@@ -34,7 +34,7 @@ public class ProductServiceImpl implements ProductService {
     ProductRepository productRepository;
     ProductMapper productMapper;
     CategoryRepository categoryRepository;
-    NamedParameterJdbcTemplate jdbcTemplate;
+//    NamedParameterJdbcTemplate jdbcTemplate;
 
     @Override
     public ProductResponse createProduct(ProductCreationRequest request) {
@@ -108,20 +108,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Map<String, Object> getProductByIdNamedJDBC(Long id) {
-        String sql = """
-        SELECT p.id AS product_id,
-               p.name AS product_name,
-               p.price,
-               p.cost,
-               c.name AS category_name
-        FROM products p
-        LEFT JOIN product_categories pc ON p.id = pc.product_id
-        LEFT JOIN categories c ON pc.category_id = c.id
-        WHERE p.id = :id
-    """;
-
-        Map<String, Object> params = Map.of("id", id);
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params);
+        List<Map<String, Object>> rows = productRepository.findProductWithCategoriesById(id);
 
         if (rows.isEmpty()) {
             return null; // hoặc throw new AppException(...)
@@ -147,56 +134,37 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Map<String, Object>> getProductsByCategoryOrderByPriceDesc(Long categoryId) {
-        String sql = "CALL get_products_search_by_category_id_and_order_by_price_desc(:categoryId)";
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("categoryId", categoryId);
-
-        return jdbcTemplate.queryForList(sql, params);
+        return productRepository.findProductsByCategoryOrderByPriceDesc(categoryId);
+//        String sql = "CALL get_products_search_by_category_id_and_order_by_price_desc(:categoryId)";
+//        Map<String, Object> params = new HashMap<>();
+//        params.put("categoryId", categoryId);
+//        return jdbcTemplate.queryForList(sql, params);
     }
 
     @Override
     public List<Map<String, Object>> getProductsByAuthor(String author) {
-        String sql = """
-        SELECT 
-            p.id AS product_id,
-            p.name AS product_name,
-            p.author,
-            p.description,
-            p.price,
-            p.stock,
-            c.name AS category_name
-        FROM products p
-        LEFT JOIN product_categories pc ON p.id = pc.product_id
-        LEFT JOIN categories c ON pc.category_id = c.id
-        WHERE p.author = :author
-        ORDER BY p.name ASC
-        """;
-
-        Map<String, Object> params = Map.of("author", author);
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, params);
+        List<Object[]> rows = productRepository.findProductsByAuthor(author);
 
         // Map<ProductId, ProductInfo + Set<CategoryName>>
         Map<Long, Map<String, Object>> productMap = new LinkedHashMap<>();
 
-        for (Map<String, Object> row : rows) {
-            Long productId = ((Number) row.get("product_id")).longValue();
+        for (Object[] row : rows) {
+            Long productId = ((Number) row[0]).longValue();
 
             Map<String, Object> productEntry = productMap.get(productId);
             if (productEntry == null) {
                 productEntry = new HashMap<>();
                 productEntry.put("product_id", productId);
-                productEntry.put("product_name", row.get("product_name"));
-                productEntry.put("author", row.get("author"));
-                productEntry.put("description", row.get("description"));
-                productEntry.put("price", row.get("price"));
-                productEntry.put("stock", row.get("stock"));
+                productEntry.put("product_name", row[1]);
+                productEntry.put("author", row[2]);
+                productEntry.put("description", row[3]);
+                productEntry.put("price", row[4]);
+                productEntry.put("stock", row[5]);
                 productEntry.put("categories", new HashSet<String>());
                 productMap.put(productId, productEntry);
             }
 
-            // Thêm category name vào set
-            String catName = (String) row.get("category_name");
+            String catName = (String) row[6];
             if (catName != null) {
                 ((Set<String>) productEntry.get("categories")).add(catName);
             }

@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.repository.query.Param;
 import tasc.bookstore.entity.Product;
 import java.util.List;
+import java.util.Map;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
     boolean existsByName(String name);
@@ -49,5 +50,38 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
         //Muốn tối ưu SQL để performance cao
 
      Page<Product> findAll(Specification<Product> spec, Pageable pageable);
+
+    @Query(value = """
+        SELECT p.id AS product_id,
+               p.name AS product_name,
+               p.price,
+               p.cost,
+               c.name AS category_name
+        FROM products p
+        LEFT JOIN product_categories pc ON p.id = pc.product_id
+        LEFT JOIN categories c ON pc.category_id = c.id
+        WHERE p.id = :id
+        """, nativeQuery = true)
+    List<Map<String, Object>> findProductWithCategoriesById(@Param("id") Long id);
+
+    @Query(value = "CALL get_products_search_by_category_id_and_order_by_price_desc(:categoryId)", nativeQuery = true)
+    List<Map<String, Object>> findProductsByCategoryOrderByPriceDesc(@Param("categoryId") Long categoryId);
+
+    @Query(value = """
+        SELECT 
+            p.id AS product_id,
+            p.name AS product_name,
+            p.author,
+            p.description,
+            p.price,
+            p.stock,
+            c.name AS category_name
+        FROM products p
+        LEFT JOIN product_categories pc ON p.id = pc.product_id
+        LEFT JOIN categories c ON pc.category_id = c.id
+        WHERE p.author = :author
+        ORDER BY p.name ASC
+        """, nativeQuery = true)
+    List<Object[]> findProductsByAuthor(@Param("author") String author);
 
 }
