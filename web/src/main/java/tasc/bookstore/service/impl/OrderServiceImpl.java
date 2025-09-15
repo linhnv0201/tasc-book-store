@@ -60,11 +60,20 @@ public class OrderServiceImpl implements OrderService {
             Product product = productRepository.findById(itemReq.getProductId())
                     .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
+            // Kiểm tra tồn kho
+            if (product.getStock() < itemReq.getQuantity()) {
+                throw new AppException(ErrorCode.INSUFFICIENT_STOCK);
+            }
+
             OrderItem orderItem = new OrderItem();
             orderItem.setOrder(order);
             orderItem.setProduct(product);
             orderItem.setQuantity(itemReq.getQuantity());
             orderItem.setPrice(product.getPrice());
+
+            product.setStock(product.getStock() - orderItem.getQuantity());
+            product.setSoldQuantity(product.getSoldQuantity() + orderItem.getQuantity());
+            productRepository.save(product);
 
             total = total.add(product.getPrice().multiply(BigDecimal.valueOf(itemReq.getQuantity())));
             order.getItems().add(orderItem);
