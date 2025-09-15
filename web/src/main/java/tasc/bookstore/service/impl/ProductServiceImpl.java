@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tasc.bookstore.dto.request.ProductCreationRequest;
@@ -81,13 +82,14 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse getProduct(Long id) {
         Product product = productRepository.findById(id).orElseThrow(
                 () -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
-        return productMapper.toProductResponse(product);
+        return filterProductForNonAdmin(productMapper.toProductResponse(product));
     }
 
     @Override
     public List<ProductResponse> getAllProducts() {
         return productRepository.findAll().stream()
                 .map(productMapper::toProductResponse)
+                .map(this::filterProductForNonAdmin)
                 .toList();
     }
 
@@ -96,6 +98,7 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductResponse> getAllProductsByCategory(Long category) {
         return productRepository.GetProductsByCategoryId(category).stream()
                 .map(productMapper::toProductResponse)
+                .map(this::filterProductForNonAdmin)
                 .toList();
     }
 
@@ -199,5 +202,23 @@ public class ProductServiceImpl implements ProductService {
             return builder.lessThanOrEqualTo(root.get("price"), maxPrice);
         };
     }
+
+    private boolean isAdmin() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null
+                && auth.isAuthenticated()
+                && !"anonymousUser".equals(auth.getName())
+                && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    }
+
+    private ProductResponse filterProductForNonAdmin(ProductResponse productResponse) {
+        if (!isAdmin()) {
+            productResponse.setCost(null);
+        }
+        return productResponse;
+    }
+
+
 
 }
