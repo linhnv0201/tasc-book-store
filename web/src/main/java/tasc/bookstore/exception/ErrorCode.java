@@ -25,6 +25,7 @@ public enum ErrorCode {
     NEGATIVE_QUANTITY(1004, "Negative quantity"),
     EMPTY_ORDER(1004, "Empty order"),
     ORDER_NOT_FOUND(1004, "Order not found"),
+    INSUFFICIENT_STOCK(1005, "Insufficient stock"),
     ;
     int code;
     String message;

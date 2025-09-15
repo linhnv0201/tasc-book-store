@@ -20,7 +20,7 @@ public interface ProductService {
     Map<String, Object> getProductByIdNamedJDBC(Long id);
     List<Map<String, Object>> getProductsByCategoryOrderByPriceDesc(Long categoryId);
     List<Map<String, Object>> getProductsByAuthor(String author);
-    Page<ProductResponse> searchByAuthorAndPriceRange(String author
+    Page<ProductResponse> fullSearch(String name, String author, String language, List<Long> categoryIds
             , BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable);
 
 }

@@ -38,7 +38,7 @@ public class ProductController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse<ProductResponse> updateProduct(@PathVariable Long id, @RequestBody ProductUpdateRequest request ) {
+    public ApiResponse<ProductResponse> updateProduct(@PathVariable Long id, @RequestBody ProductUpdateRequest request) {
         ApiResponse<ProductResponse> apiResponse = new ApiResponse<>();
         apiResponse.setMessage("Successfully updated product");
         apiResponse.setResult(productService.updateProduct(id, request));
@@ -105,7 +105,10 @@ public class ProductController {
 
     @GetMapping("/spec/search")
     public ApiResponse<Page<ProductResponse>> search(
-            @RequestParam String author,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) String language,
+            @RequestParam(required = false) List<Long> categoryIds,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(defaultValue = "0") int page,
@@ -113,7 +116,8 @@ public class ProductController {
     ) {
         ApiResponse<Page<ProductResponse>> response = new ApiResponse<>();
         response.setMessage("Successfully retrieved products");
-        response.setResult(productService.searchByAuthorAndPriceRange(author, minPrice, maxPrice, PageRequest.of(page, size)));
+        response.setResult(productService.fullSearch(name, author, language,
+                categoryIds, minPrice, maxPrice, PageRequest.of(page, size)));
         return response;
     }
 }

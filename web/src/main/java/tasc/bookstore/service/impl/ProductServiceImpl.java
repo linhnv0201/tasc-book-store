@@ -6,8 +6,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +18,7 @@ import tasc.bookstore.exception.AppException;
 import tasc.bookstore.exception.ErrorCode;
 import tasc.bookstore.mapper.ProductMapper;
 import tasc.bookstore.repository.CategoryRepository;
+import tasc.bookstore.repository.ProductJDBCRepository;
 import tasc.bookstore.repository.ProductRepository;
 import tasc.bookstore.service.ProductService;
 
@@ -27,12 +26,15 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static tasc.bookstore.specification.ProductSpecification.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductServiceImpl implements ProductService {
     ProductRepository productRepository;
+    ProductJDBCRepository productJDBCRepository;
     ProductMapper productMapper;
     CategoryRepository categoryRepository;
 //    NamedParameterJdbcTemplate jdbcTemplate;
@@ -111,7 +113,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Map<String, Object> getProductByIdNamedJDBC(Long id) {
-        List<Map<String, Object>> rows = productRepository.findProductWithCategoriesById(id);
+        List<Map<String, Object>> rows = productJDBCRepository.findProductWithCategoriesById(id);
 
         if (rows.isEmpty()) {
             return null; // hoặc throw new AppException(...)
@@ -137,11 +139,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Map<String, Object>> getProductsByCategoryOrderByPriceDesc(Long categoryId) {
-        return productRepository.findProductsByCategoryOrderByPriceDesc(categoryId);
-//        String sql = "CALL get_products_search_by_category_id_and_order_by_price_desc(:categoryId)";
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("categoryId", categoryId);
-//        return jdbcTemplate.queryForList(sql, params);
+        return productJDBCRepository.findProductsByCategoryOrderByPriceDesc(categoryId);
     }
 
     @Override
@@ -179,29 +177,18 @@ public class ProductServiceImpl implements ProductService {
 
     // test Specification + paging
     @Override
-    public Page<ProductResponse> searchByAuthorAndPriceRange(String author
+    public Page<ProductResponse> fullSearch(String name, String author, String language, List<Long> categoriesId
             , BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
         return productRepository.findAll(
-                hasAuthor(author).and(hasPriceBetween(minPrice, maxPrice)),
+                hasName(name)
+                        .and(hasAuthor(author))
+                        .and(hasLanguage(language))
+                        .and(hasCategories(categoriesId))
+                        .and(hasPriceBetween(minPrice, maxPrice)),
                 pageable
         ).map(productMapper::toProductResponse);
     }
 
-    // ================== Specification tạm trong service ==================
-    private static Specification<Product> hasAuthor(String author) {
-        return (root, query, builder) ->
-                author == null ? null :
-                        builder.like(builder.lower(root.get("author")), "%" + author.toLowerCase() + "%");
-    }
-
-    private static Specification<Product> hasPriceBetween(BigDecimal minPrice, BigDecimal maxPrice) {
-        return (root, query, builder) -> {
-            if (minPrice == null && maxPrice == null) return null;
-            if (minPrice != null && maxPrice != null) return builder.between(root.get("price"), minPrice, maxPrice);
-            if (minPrice != null) return builder.greaterThanOrEqualTo(root.get("price"), minPrice);
-            return builder.lessThanOrEqualTo(root.get("price"), maxPrice);
-        };
-    }
 
     private boolean isAdmin() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
@@ -218,7 +205,6 @@ public class ProductServiceImpl implements ProductService {
         }
         return productResponse;
     }
-
 
 
 }
