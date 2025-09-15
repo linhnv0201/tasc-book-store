@@ -37,4 +37,10 @@ public class User {
     String address;
 
     Set<String> role;
+
+//    @ElementCollection(fetch = FetchType.EAGER)
+//    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+//    @Enumerated(EnumType.STRING)
+//    @Column(name = "role")
+//    Set<Role> role;
 }

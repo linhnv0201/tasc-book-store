@@ -27,6 +27,7 @@ public class UserController {
     UserService userService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserResponse> createUser(@RequestBody UserCreationRequest request) {
         ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
         apiResponse.setResult(userService.createUser(request));
@@ -35,6 +36,7 @@ public class UserController {
 
     // Update User
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserResponse> updateUser(
             @PathVariable Long id,
             @RequestBody @Valid UserUpdateRequest request) {
@@ -59,6 +61,7 @@ public class UserController {
 
     // Get user by id
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
     public ApiResponse<UserResponse> getUser(@PathVariable Long id) {
         ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
         apiResponse.setResult(userService.getUser(id));
@@ -67,6 +70,7 @@ public class UserController {
 
     // Delete user
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
 
@@ -75,6 +79,7 @@ public class UserController {
         return apiResponse;
     }
 
+    //có danh sách role
     @GetMapping("/myInfo")
     ApiResponse<UserResponse> getMyInfo(){
         return ApiResponse.<UserResponse>builder()
@@ -83,12 +88,14 @@ public class UserController {
     }
 
     @GetMapping("/myInfoJDBC")
-    public Map<String, Object> getMyInfoJDBC() {
-        return userService.getMyInfoJDBC();
+    public ApiResponse<Map<String, Object>> getMyInfoJDBC() {
+        ApiResponse<Map<String, Object>> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.getMyInfoJDBC());
+        return apiResponse;
     }
 
     @GetMapping("/fullname/{fullname}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
     public ApiResponse<List<UserResponse>> getUsersByFullname(@PathVariable String fullname) {
         ApiResponse<List<UserResponse>> response = new ApiResponse<>();
         response.setMessage("Successfully retrieved users by fullname");

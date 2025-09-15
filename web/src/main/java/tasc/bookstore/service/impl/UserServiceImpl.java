@@ -23,9 +23,10 @@ import tasc.bookstore.mapper.UserMapper;
 import tasc.bookstore.repository.UserRepository;
 import tasc.bookstore.service.UserService;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -134,13 +135,24 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserResponse(user);
     }
 
+//    @Override
+//    public Map<String, Object> getMyInfoJDBC() {
+//        var context = SecurityContextHolder.getContext();
+//        String email = context.getAuthentication().getName();
+//
+//        return jdbcTemplate
+//                .queryForMap("select email, fullname, phone, address, role from users where email = ? ", email);
+//    }
     @Override
     public Map<String, Object> getMyInfoJDBC() {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
 
-        return jdbcTemplate
-                .queryForMap("select email, fullname, phone from users where email = ? ", email);
+        //role bi serialize khi luu, dung voi jpa thi tu dong deserialize
+        Map<String, Object> result = jdbcTemplate
+                .queryForMap("select email, fullname, phone, address from users where email = ? ", email);
+
+        return result;
     }
 
     @Override

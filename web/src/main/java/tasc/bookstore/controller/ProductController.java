@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tasc.bookstore.dto.request.ProductCreationRequest;
 import tasc.bookstore.dto.request.ProductUpdateRequest;
@@ -26,6 +27,8 @@ public class ProductController {
     ProductService productService;
 
     @PostMapping
+//    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<ProductResponse> createProduct(@RequestBody ProductCreationRequest request) {
         ApiResponse<ProductResponse> apiResponse = new ApiResponse<>();
         apiResponse.setMessage("Successfully created product");
@@ -34,6 +37,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<ProductResponse> updateProduct(@PathVariable Long id, @RequestBody ProductUpdateRequest request ) {
         ApiResponse<ProductResponse> apiResponse = new ApiResponse<>();
         apiResponse.setMessage("Successfully updated product");
@@ -42,6 +46,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> deleteProduct(@PathVariable Long id) {
         ApiResponse<Void> apiResponse = new ApiResponse<>();
         apiResponse.setMessage("Successfully deleted product");

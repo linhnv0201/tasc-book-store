@@ -8,6 +8,7 @@ import tasc.bookstore.dto.response.UserResponse;
 import tasc.bookstore.entity.User;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -24,4 +25,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "FROM User u " +
             "WHERE u.fullname = :fullname")
     List<UserResponse> findUsersByFullname(@Param("fullname") String fullname);
+
 }
