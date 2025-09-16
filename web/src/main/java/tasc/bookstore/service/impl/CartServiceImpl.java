@@ -37,16 +37,11 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional // tránh tạo 1 cart trùng cho nhiều user 1 lúc
     public CartResponse getCart() {
-        var context = SecurityContextHolder.getContext();
-        String email = context.getAuthentication().getName();
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        Cart cart = cartRepository.findByCustomerId(user.getId())
+        Cart cart = cartRepository.findByCustomerId(getCurrentUser().getId())
                 .orElseGet(() -> {
                     Cart newCart = new Cart();
-                    newCart.setCustomer(user);
+                    newCart.setCustomer(getCurrentUser());
                     return cartRepository.save(newCart);
                 });
 
@@ -59,30 +54,21 @@ public class CartServiceImpl implements CartService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         response.setTotalPrice(total);
-        response.setCustomerName(user.getFullname());
+        response.setCustomerName(getCurrentUser().getFullname());
 
         return response;
     }
 
     @Transactional
     public Cart getCartEntity() {
-        var context = SecurityContextHolder.getContext();
-        String email = context.getAuthentication().getName();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        return cartRepository.findByCustomerId(user.getId())
-                .orElseGet(() -> {
-                    Cart newCart = new Cart();
-                    newCart.setCustomer(user);
-                    return cartRepository.save(newCart);
-                });
+        return cartRepository.findByCustomerId(getCurrentUser().getId())
+                .orElseThrow(() ->
+                        new AppException(ErrorCode.CART_NOT_FOUND));
     }
 
     @Override
     @Transactional
-    public void addToCart(CartItemRequest request) {
+    public CartResponse addToCart(CartItemRequest request) {
         Cart cart = getCartEntity();
 
         Product product = productRepository.findById(request.getProductId())
@@ -102,13 +88,20 @@ public class CartServiceImpl implements CartService {
                     cart.getItems().add(item);
                 }
         );
-
         cartRepository.save(cart);
+        CartResponse cartResponse = cartMapper.toCartResponse(cart);
+        // Tính totalPrice
+        BigDecimal total = cart.getItems().stream()
+                .map(item -> item.getProduct().getPrice()
+                        .multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        cartResponse.setTotalPrice(total);
+        return cartResponse;
     }
 
     @Override
     @Transactional
-    public void updateCartItem(CartItemRequest request) {
+    public CartResponse updateCartItem(CartItemRequest request) {
         if (request.getProductId() == null) {
             throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
         }
@@ -131,6 +124,14 @@ public class CartServiceImpl implements CartService {
         }
 
         cartRepository.save(cart);
+        CartResponse cartResponse = cartMapper.toCartResponse(cart);
+        // Tính totalPrice
+        BigDecimal total = cart.getItems().stream()
+                .map(item2 -> item2.getProduct().getPrice()
+                        .multiply(BigDecimal.valueOf(item2.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        cartResponse.setTotalPrice(total);
+        return cartResponse;
     }
 
 
@@ -140,6 +141,16 @@ public class CartServiceImpl implements CartService {
         Cart cart = getCartEntity();
         cart.getItems().removeIf(ci -> ci.getProduct().getId().equals(productId));
         cartRepository.save(cart);
+    }
+
+    private User getCurrentUser() {
+        var context = SecurityContextHolder.getContext();
+        String email = context.getAuthentication().getName();
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+
     }
 
 }

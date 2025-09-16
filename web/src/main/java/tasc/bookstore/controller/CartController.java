@@ -28,7 +28,7 @@ public class CartController {
     }
 
     @PostMapping("/add")
-    public ApiResponse<Void> addToCart(@RequestBody CartItemRequest request) {
+    public ApiResponse<CartResponse> addToCart(@RequestBody CartItemRequest request) {
         if (request.getProductId() == null) {
             throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
         }
@@ -36,24 +36,23 @@ public class CartController {
             throw new AppException(ErrorCode.NEGATIVE_QUANTITY);
         }
 
-        cartService.addToCart(request);
-
-        ApiResponse<Void> apiResponse = new ApiResponse<>();
+        ApiResponse<CartResponse> apiResponse = new ApiResponse<>();
         apiResponse.setMessage("Add to cart successful");
+        apiResponse.setResult(cartService.addToCart(request));
         return apiResponse;
     }
 
     @PutMapping("/update")
-    public ApiResponse<Void> updateCartItem(@RequestBody CartItemRequest request){
+    public ApiResponse<CartResponse> updateCartItem(@RequestBody CartItemRequest request){
         if (request.getProductId() == null) {
             throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
         }
         if (request.getQuantity() == null || request.getQuantity() <= 0) {
             throw new AppException(ErrorCode.NEGATIVE_QUANTITY);
         }
-        ApiResponse<Void> apiResponse = new ApiResponse<>();
+        ApiResponse<CartResponse> apiResponse = new ApiResponse<>();
         apiResponse.setMessage("Update cart successful");
-        cartService.updateCartItem(request);
+        apiResponse.setResult(cartService.updateCartItem(request));
         return apiResponse;
     }
 

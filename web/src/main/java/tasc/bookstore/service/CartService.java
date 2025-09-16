@@ -8,7 +8,7 @@ import tasc.bookstore.entity.User;
 public interface CartService {
 
     CartResponse getCart();
-    void addToCart(CartItemRequest request);
+    CartResponse addToCart(CartItemRequest request);
+    CartResponse updateCartItem(CartItemRequest request);
     void removeFromCart(Long productId);
-    void updateCartItem(CartItemRequest request);
 }
