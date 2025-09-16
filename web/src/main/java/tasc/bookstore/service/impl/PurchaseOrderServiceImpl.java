@@ -98,6 +98,8 @@ public class PurchaseOrderServiceImpl implements PurchasrOrderService {
 
         purchaseOrder.setTotalAmount(total);
         purchaseOrderRepository.save(purchaseOrder);
+        PurchaseOrderResponse purchaseOrderResponse = new PurchaseOrderResponse();
+        purchaseOrderResponse.setCreatedBy(getCurrentUser().getFullname());
         return purchaseOrderMapper.toResponse(purchaseOrder);
     }
 

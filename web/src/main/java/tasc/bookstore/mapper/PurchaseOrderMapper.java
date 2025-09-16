@@ -9,8 +9,10 @@ import tasc.bookstore.entity.PurchaseOrderItem;
 
 @Mapper(componentModel = "spring")
 public interface PurchaseOrderMapper {
+    // tip: source lấy trong entity rồi lấy tên field , map sang target là tên trong response
     @Mapping(source = "items", target = "items")
     @Mapping(source = "createdBy.fullname", target = "createdBy") // map sang field trong DTO
+    @Mapping(source = "supplier.name", target = "supplierName")
     PurchaseOrderResponse toResponse(PurchaseOrder purchaseOrder);
 
     @Mapping(source = "product.name", target = "productName") // chỉ map tên product
