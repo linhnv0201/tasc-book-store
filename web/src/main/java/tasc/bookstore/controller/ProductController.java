@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tasc.bookstore.dto.request.ProductCreationRequest;
@@ -15,6 +16,7 @@ import tasc.bookstore.dto.response.ProductResponse;
 import tasc.bookstore.service.ProductService;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -120,4 +122,19 @@ public class ProductController {
                 categoryIds, minPrice, maxPrice, PageRequest.of(page, size)));
         return response;
     }
+
+    @GetMapping("/top-sold")
+    public ApiResponse<List<Map<String, Object>>> getTopSoldProducts(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        if (endDate == null) {
+            endDate = LocalDate.now();
+        }
+        ApiResponse<List<Map<String, Object>>> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Successfully retrieved top-sold products");
+        apiResponse.setResult(productService.getTopSoldProducts(startDate, endDate));
+        return apiResponse;
+    }
+
 }

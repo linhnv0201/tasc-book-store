@@ -23,6 +23,7 @@ import tasc.bookstore.repository.ProductRepository;
 import tasc.bookstore.service.ProductService;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -204,6 +205,11 @@ public class ProductServiceImpl implements ProductService {
             productResponse.setCost(null);
         }
         return productResponse;
+    }
+
+    @Override
+    public List<Map<String, Object>> getTopSoldProducts(LocalDate startDate, LocalDate endDate){
+        return productJDBCRepository.getTopSoldProducts(startDate, endDate);
     }
 
 

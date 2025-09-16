@@ -96,7 +96,6 @@ public class PurchaseOrderServiceImpl implements PurchasrOrderService {
             productRepository.save(product);
         }
 
-
         purchaseOrder.setTotalAmount(total);
         purchaseOrderRepository.save(purchaseOrder);
         return purchaseOrderMapper.toResponse(purchaseOrder);
