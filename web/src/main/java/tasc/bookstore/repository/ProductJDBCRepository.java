@@ -133,4 +133,27 @@ public class ProductJDBCRepository {
         );
     }
 
+    public List<Map<String, Object>> getPurchaseOrderItemBySupplierId(
+            Long supplierId, LocalDate from, LocalDate to) {
+
+        // Nếu to == null thì lấy thời điểm hiện tại
+        if (to == null) {
+            to = LocalDate.now();
+        }
+
+        String sql = "SELECT " +
+                "    p.id AS product_id, " +
+                "    p.name AS product_name, " +
+                "    SUM(poi.quantity) AS total_quantity " +
+                "FROM purchase_order_items poi " +
+                "JOIN purchase_orders po ON poi.purchase_order_id = po.id " +
+                "JOIN products p ON poi.product_id = p.id " +
+                "WHERE po.supplier_id = ? " +
+                "  AND po.created_at BETWEEN ? AND ? " +
+                "GROUP BY p.id, p.name " +
+                "ORDER BY total_quantity DESC";
+
+        return jdbcTemplate.queryForList(sql, supplierId, from, to);
+    }
+
 }

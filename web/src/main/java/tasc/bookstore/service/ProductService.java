@@ -8,6 +8,7 @@ import tasc.bookstore.dto.response.ProductResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,5 @@ public interface ProductService {
     Page<ProductResponse> fullSearch(String name, String author, String language, List<Long> categoryIds
             , BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable);
     List<Map<String, Object>> getTopSoldProducts(LocalDate startDate, LocalDate endDate);
-
-
+    List<Map<String, Object>> getPurchaseOrderItemBySupplierId(Long supplierId, LocalDate startDate, LocalDate endDate);
 }

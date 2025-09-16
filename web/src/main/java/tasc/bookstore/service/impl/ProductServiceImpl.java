@@ -212,5 +212,11 @@ public class ProductServiceImpl implements ProductService {
         return productJDBCRepository.getTopSoldProducts(startDate, endDate);
     }
 
+    @Override
+    public List<Map<String, Object>> getPurchaseOrderItemBySupplierId(Long supplierId, LocalDate startDate, LocalDate endDate) {
+        return productJDBCRepository.getPurchaseOrderItemBySupplierId(supplierId, startDate, endDate);
+    }
+
+
 
 }

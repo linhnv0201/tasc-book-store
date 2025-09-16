@@ -137,4 +137,16 @@ public class ProductController {
         return apiResponse;
     }
 
+    @GetMapping("/top-bought/supplier/{id}")
+    public ApiResponse<List<Map<String, Object>>> getTopBoughtSupplierProducts(
+            @PathVariable Long id,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        ApiResponse<List<Map<String, Object>>> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Successfully retrieved top-bought supplier products");
+        apiResponse.setResult(productService.getPurchaseOrderItemBySupplierId(id, startDate, endDate));
+        return apiResponse;
+    }
+
 }

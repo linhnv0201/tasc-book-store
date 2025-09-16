@@ -134,7 +134,6 @@ public class CartServiceImpl implements CartService {
         return cartResponse;
     }
 
-
     @Override
     @Transactional
     public void removeFromCart(Long productId) {

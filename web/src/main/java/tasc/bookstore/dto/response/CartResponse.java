@@ -16,5 +16,5 @@ public class CartResponse {
     Long id;
     String customerName;
     List<CartItemResponse> items;
-    BigDecimal totalPrice;    // tính toán dựa trên giá hiện tại của product
+    BigDecimal totalPrice;
 }
