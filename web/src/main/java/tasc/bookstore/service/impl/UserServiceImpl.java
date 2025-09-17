@@ -125,6 +125,7 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 
+
     public UserResponse getMyInfo() {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
@@ -135,17 +136,35 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserResponse(user);
     }
 
+//    @Override
+//    public Map<String, Object> getMyInfoJDBC() {
+//        var context = SecurityContextHolder.getContext();
+//        String email = context.getAuthentication().getName();
+//
+//        //role bi serialize khi luu, dung voi jpa thi tu dong deserialize
+//        Map<String, Object> result = jdbcTemplate
+//                .queryForMap("select email, fullname, phone, address from users where email = ? ", email);
+//
+//        return result;
+//    }
     @Override
-    public Map<String, Object> getMyInfoJDBC() {
+    public UserResponse getMyInfoJDBC() {
         var context = SecurityContextHolder.getContext();
         String email = context.getAuthentication().getName();
 
-        //role bi serialize khi luu, dung voi jpa thi tu dong deserialize
         Map<String, Object> result = jdbcTemplate
-                .queryForMap("select email, fullname, phone, address from users where email = ? ", email);
+                .queryForMap("select email, fullname, phone, address from users where email = ?", email);
 
-        return result;
+        // Chuyển Map sang UserResponse
+        UserResponse response = new UserResponse();
+        response.setEmail((String) result.get("email"));
+        response.setFullname((String) result.get("fullname"));
+        response.setPhone((String) result.get("phone"));
+        response.setAddress((String) result.get("address"));
+
+        return response;
     }
+
 
     @Override
     public List<UserResponse> getUsersByFullname(String fullname) {

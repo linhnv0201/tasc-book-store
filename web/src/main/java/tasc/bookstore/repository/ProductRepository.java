@@ -80,8 +80,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
         ORDER BY p.name ASC
         """, nativeQuery = true)
     List<Object[]> findProductsByAuthor(@Param("author") String author);
-
-
 //    @Query(value = "CALL get_products_search_by_category_id_and_order_by_price_desc(:categoryId)", nativeQuery = true)
 //    List<Map<String, Object>> findProductsByCategoryOrderByPriceDesc(@Param("categoryId") Long categoryId);
 

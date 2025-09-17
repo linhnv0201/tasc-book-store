@@ -18,7 +18,8 @@ public interface UserService {
     UserResponse getUser(Long id);
     void deleteUser(Long id);
     UserResponse getMyInfo();
-    Map<String, Object> getMyInfoJDBC();
+//    Map<String, Object> getMyInfoJDBC();
+    UserResponse getMyInfoJDBC();
 //    List<UserResponse> getUsersByRole(String roleName);
     List<UserResponse> getUsersByFullname(String fullname);
 }

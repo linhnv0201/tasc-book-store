@@ -48,7 +48,7 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
-    ApiResponse<List<UserResponse>> getUsers(){
+    ApiResponse<List<UserResponse>> getUsers() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
         log.info("Email: {}", authentication.getName());
@@ -81,15 +81,21 @@ public class UserController {
 
     //có danh sách role
     @GetMapping("/myInfo")
-    ApiResponse<UserResponse> getMyInfo(){
+    ApiResponse<UserResponse> getMyInfo() {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.getMyInfo())
                 .build();
     }
 
+    //    @GetMapping("/myInfoJDBC")
+//    public ApiResponse<Map<String, Object>> getMyInfoJDBC() {
+//        ApiResponse<Map<String, Object>> apiResponse = new ApiResponse<>();
+//        apiResponse.setResult(userService.getMyInfoJDBC());
+//        return apiResponse;
+//    }
     @GetMapping("/myInfoJDBC")
-    public ApiResponse<Map<String, Object>> getMyInfoJDBC() {
-        ApiResponse<Map<String, Object>> apiResponse = new ApiResponse<>();
+    public ApiResponse<UserResponse> getMyInfoJDBC() {
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
         apiResponse.setResult(userService.getMyInfoJDBC());
         return apiResponse;
     }
