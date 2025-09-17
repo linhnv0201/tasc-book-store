@@ -16,7 +16,8 @@ public interface ProductService {
     ProductResponse createProduct(ProductCreationRequest request);
     ProductResponse updateProduct(Long id, ProductUpdateRequest request);
     ProductResponse getProduct(Long id);
-    List<ProductResponse> getAllProducts();
+//    List<ProductResponse> getAllProducts();
+    Page<ProductResponse> getAllProducts(Pageable pageable);
     List<ProductResponse> getAllProductsByCategory(Long categoryId);
     void deleteProduct(Long id);
     Map<String, Object> getProductByIdNamedJDBC(Long id);

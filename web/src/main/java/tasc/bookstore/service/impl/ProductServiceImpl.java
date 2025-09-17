@@ -89,11 +89,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponse> getAllProducts() {
-        return productRepository.findAll().stream()
+//    public List<ProductResponse> getAllProducts() {
+//        return productRepository.findAll().stream()
+//                .map(productMapper::toProductResponse)
+//                .map(this::filterProductForNonAdmin)
+//                .toList();
+//    }
+    public Page<ProductResponse> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable)
                 .map(productMapper::toProductResponse)
-                .map(this::filterProductForNonAdmin)
-                .toList();
+                .map(this::filterProductForNonAdmin);
     }
 
     @Override

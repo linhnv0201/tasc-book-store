@@ -6,6 +6,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -56,13 +58,30 @@ public class ProductController {
         return apiResponse;
     }
 
-    @GetMapping
-    public ApiResponse<List<ProductResponse>> getAllProducts() {
-        ApiResponse<List<ProductResponse>> apiResponse = new ApiResponse<>();
-        apiResponse.setMessage("Successfully retrieved products");
-        apiResponse.setResult(productService.getAllProducts());
-        return apiResponse;
-    }
+//    @GetMapping
+//    public ApiResponse<List<ProductResponse>> getAllProducts() {
+//        ApiResponse<List<ProductResponse>> apiResponse = new ApiResponse<>();
+//        apiResponse.setMessage("Successfully retrieved products");
+//        apiResponse.setResult(productService.getAllProducts());
+//        return apiResponse;
+//    }
+@GetMapping
+public ApiResponse<Page<ProductResponse>> getAllProducts(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+
+    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+    // Lấy page từ repository qua service
+    Page<ProductResponse> products = productService.getAllProducts(pageable);
+
+    ApiResponse<Page<ProductResponse>> apiResponse = new ApiResponse<>();
+    apiResponse.setMessage("Successfully retrieved products");
+    apiResponse.setResult(products);
+    return apiResponse;
+}
+
+
 
     @GetMapping("/{id}")
     public ApiResponse<ProductResponse> getProduct(@PathVariable Long id) {

@@ -42,4 +42,12 @@ public class OrderController {
         apiResponse.setResult(orderService.createOrder(orderRequest));
         return apiResponse;
     }
+
+    @PostMapping("/cancel/{id}")
+    public ApiResponse<OrderResponse> cancelOrder(@PathVariable Long id) {
+        ApiResponse<OrderResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Order cancelled");
+        orderService.cancelOrder(id);
+        return apiResponse;
+    }
 }

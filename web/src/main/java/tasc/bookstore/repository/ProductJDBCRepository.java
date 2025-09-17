@@ -19,7 +19,6 @@ public class ProductJDBCRepository {
     public List<Map<String, Object>> findProductsByCategoryOrderByPriceDesc(Long categoryId) {
         String sql = "CALL get_products_search_by_category_id_and_order_by_price_desc(:categoryId)";
         Map<String, Object> params = Map.of("categoryId", categoryId);
-
 //        return jdbcTemplate.query(sql, params, (rs) -> {
 //            List<Map<String, Object>> results = new ArrayList<>();
 //            while (rs.next()) {

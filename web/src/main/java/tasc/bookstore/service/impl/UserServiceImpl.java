@@ -135,14 +135,6 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserResponse(user);
     }
 
-//    @Override
-//    public Map<String, Object> getMyInfoJDBC() {
-//        var context = SecurityContextHolder.getContext();
-//        String email = context.getAuthentication().getName();
-//
-//        return jdbcTemplate
-//                .queryForMap("select email, fullname, phone, address, role from users where email = ? ", email);
-//    }
     @Override
     public Map<String, Object> getMyInfoJDBC() {
         var context = SecurityContextHolder.getContext();

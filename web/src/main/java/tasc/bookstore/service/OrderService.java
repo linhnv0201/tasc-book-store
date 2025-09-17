@@ -9,6 +9,7 @@ import java.util.Map;
 
 public interface OrderService {
     OrderResponse createOrder(OrderRequest request);
+    void cancelOrder(Long orderId);
     List<OrderResponse> getAllOrders();
     List<OrderResponse> getMyOrders();
 }

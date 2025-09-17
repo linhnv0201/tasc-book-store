@@ -14,16 +14,15 @@ import tasc.bookstore.entity.*;
 import tasc.bookstore.exception.AppException;
 import tasc.bookstore.exception.ErrorCode;
 import tasc.bookstore.mapper.OrderMapper;
-import tasc.bookstore.repository.CartRepository;
-import tasc.bookstore.repository.OrderRepository;
-import tasc.bookstore.repository.ProductRepository;
-import tasc.bookstore.repository.UserRepository;
+import tasc.bookstore.repository.*;
 import tasc.bookstore.service.OrderService;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -35,6 +34,7 @@ public class OrderServiceImpl implements OrderService {
     UserRepository userRepository;
     ProductRepository productRepository;
     CartRepository cartRepository;
+    OrderItemRepository orderItemRepository;
     OrderRepository orderRepository;
     OrderMapper orderMapper;
 
@@ -70,6 +70,7 @@ public class OrderServiceImpl implements OrderService {
             orderItem.setProduct(product);
             orderItem.setQuantity(itemReq.getQuantity());
             orderItem.setPrice(product.getPrice());
+            orderItem.setCost(product.getCost());
 
             product.setStock(product.getStock() - orderItem.getQuantity());
             product.setSoldQuantity(product.getSoldQuantity() + orderItem.getQuantity());
@@ -94,6 +95,35 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
 
         return orderMapper.toOrderResponse(order);
+    }
+
+    @Override
+    @Transactional
+    public void cancelOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        order.setStatus(Order.Status.CANCELLED);
+
+        List<Product> productToUpdate = new ArrayList<>();
+        List<OrderItem> orderItems = order.getItems();
+        for (OrderItem orderItem : orderItems) {
+            Product product = productRepository.findById(orderItem.getProduct().getId())
+                    .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+            int oldStock = product.getStock();
+            int qty = orderItem.getQuantity();
+
+            BigDecimal newCost = orderItem.getCost().multiply(BigDecimal.valueOf(qty))
+                    .add(product.getCost().multiply(BigDecimal.valueOf(oldStock)))
+                    .divide(BigDecimal.valueOf(oldStock + qty), RoundingMode.HALF_UP);
+
+            product.setStock(oldStock + qty);
+            product.setCost(newCost);
+            product.setSoldQuantity(product.getSoldQuantity() - orderItem.getQuantity());
+            productToUpdate.add(product);
+        }
+        productRepository.saveAll(productToUpdate);
+        orderRepository.save(order);
     }
 
     @Override
