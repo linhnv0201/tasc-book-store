@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8000
   servlet:
     context-path: /bookstore
 
@@ -17,3 +17,14 @@ jwt:
   signerKey: "+sKONebNUcmUmf+npmjczX4luDnOk4troBnQMmhVxqp64MSKvk5XrVe2Ijr1X+qS"
   valid-duration: 3600 #in second
   refreshable-duration: 36000 # in seconds
+
+
+payment:
+  vnPay:
+    url: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
+    tmnCode: "EFAXRVFK"
+    secretKey: "H2LZYC57EI28HPVTR4H13HTKM682U60E"
+    returnUrl: "http://localhost:8000/bookstore/payment/vn-pay-callback"
+    version: 2.1.0
+    command: "pay"
+    orderType: "other"

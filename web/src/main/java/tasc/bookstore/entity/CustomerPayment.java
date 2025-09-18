@@ -34,18 +34,7 @@ public class CustomerPayment {
     @Column(nullable = false)
     BigDecimal amount;
 
-    @Enumerated(EnumType.STRING)
-    Status status;
-
-    @ManyToOne
-    @JoinColumn(name = "created_by")
-    User createdBy;
-
     public enum PaymentMethod {
         CASH, BANK_TRANSFER, OTHER
-    }
-
-    public enum Status {
-        UNPAID, PAID
     }
 }
