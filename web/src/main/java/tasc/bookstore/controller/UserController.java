@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +18,6 @@ import tasc.bookstore.dto.response.UserResponse;
 import tasc.bookstore.service.UserService;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -58,6 +59,22 @@ public class UserController {
                 .result(userService.getUsers())
                 .build();
     }
+
+    @GetMapping("/spec/search")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Page<UserResponse>> searchUsers(
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String fullName,
+            @RequestParam(required = false) String role,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        ApiResponse<Page<UserResponse>> apiResponse = new ApiResponse<>();
+        apiResponse.setMessage("Successfully search users");
+        apiResponse.setResult(userService.searchUsers(email, fullName, role, PageRequest.of(page, size)));
+        return apiResponse;
+    }
+
 
     // Get user by id
     @GetMapping("/{id}")

@@ -4,9 +4,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,10 +23,10 @@ import tasc.bookstore.mapper.UserMapper;
 import tasc.bookstore.repository.UserRepository;
 import tasc.bookstore.service.UserService;
 
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static tasc.bookstore.specification.ProductSpecification.hasName;
+import static tasc.bookstore.specification.UserSpecification.*;
 
 @Slf4j
 @Service
@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
         // validate role
         for (String roleStr : request.getRole()) {
             try {
-                Role.valueOf(roleStr); // nếu ko hợp lệ sẽ throw IllegalArgumentException
+                Role.valueOf(roleStr);
             } catch (IllegalArgumentException e) {
                 throw new AppException(ErrorCode.INVALID_ROLE);
             }
@@ -115,6 +115,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUser(Long id) {
         return userMapper.toUserResponse(userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)));
+
     }
 
     @Override
@@ -165,9 +166,18 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
-
     @Override
     public List<UserResponse> getUsersByFullname(String fullname) {
         return userRepository.findUsersByFullname(fullname);
+    }
+
+    @Override
+    public Page<UserResponse> searchUsers(String email, String fullname, String role, Pageable pageable){
+        return userRepository.findAll(
+                hasEmail(email)
+                        .and(hasFullName(fullname))
+                        .and(hasRole(role))
+                , pageable
+        ).map(userMapper::toUserResponse);
     }
 }

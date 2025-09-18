@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
+    Page<Product> findAll(Specification<Product> spec, Pageable pageable);
     boolean existsByName(String name);
 
 //Các cách truy vấn lấy list product by categoryId
@@ -48,8 +49,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
         //Query phức tạp, join nhiều bảng, subquery, function DB-specific
         //Khi JPQL không hỗ trợ
         //Muốn tối ưu SQL để performance cao
-
-     Page<Product> findAll(Specification<Product> spec, Pageable pageable);
 
     @Query(value = """
         SELECT p.id AS product_id,

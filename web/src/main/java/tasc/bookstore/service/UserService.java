@@ -1,5 +1,7 @@
 package tasc.bookstore.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import tasc.bookstore.dto.request.UserCreationRequest;
 import tasc.bookstore.dto.request.UserPasswordUpdateRequest;
 import tasc.bookstore.dto.request.UserUpdateRequest;
@@ -22,4 +24,5 @@ public interface UserService {
     UserResponse getMyInfoJDBC();
 //    List<UserResponse> getUsersByRole(String roleName);
     List<UserResponse> getUsersByFullname(String fullname);
+    Page<UserResponse> searchUsers(String email, String fullname, String role, Pageable pageable);
 }
