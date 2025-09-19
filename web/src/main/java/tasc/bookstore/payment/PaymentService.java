@@ -29,9 +29,13 @@ public class PaymentService {
 
     public PaymentDTO.VNPayResponse createVnPayPayment(HttpServletRequest request) {
         Long orderId = Long.parseLong(request.getParameter("orderId"));
-        BigDecimal total = orderRepository.findById(orderId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND))
-                .getTotalAmount();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        if (order.getStatus() != Order.Status.PENDING ){
+            throw new AppException(ErrorCode.NO_PAYMENT_EXISTED);
+        }
+        BigDecimal total = order.getTotalAmount();
+
         long amount = total.multiply(new BigDecimal(100)).longValue();
 
         String bankCode = request.getParameter("bankCode");

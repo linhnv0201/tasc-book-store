@@ -27,6 +27,8 @@ public enum ErrorCode {
     ORDER_NOT_FOUND(1004, "Order not found"),
     CART_NOT_FOUND(1004, "Cart not found"),
     INSUFFICIENT_STOCK(1005, "Insufficient stock"),
+    NO_PAYMENT_EXISTED(1005, "Payment already paid or cancelled"),
+
     ;
     int code;
     String message;

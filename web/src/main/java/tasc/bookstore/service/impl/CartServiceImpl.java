@@ -1,12 +1,13 @@
 package tasc.bookstore.service.impl;
 
-import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import tasc.bookstore.dto.request.CartItemRequest;
 import tasc.bookstore.dto.response.CartResponse;
 import tasc.bookstore.entity.Cart;
@@ -35,15 +36,8 @@ public class CartServiceImpl implements CartService {
     CartMapper cartMapper;
 
     @Override
-    @Transactional // tránh tạo 1 cart trùng cho nhiều user 1 lúc
     public CartResponse getCart() {
-
-        Cart cart = cartRepository.findByCustomerId(getCurrentUser().getId())
-                .orElseGet(() -> {
-                    Cart newCart = new Cart();
-                    newCart.setCustomer(getCurrentUser());
-                    return cartRepository.save(newCart);
-                });
+        Cart cart = getOrCreateCartEntity();
 
         CartResponse response = cartMapper.toCartResponse(cart);
 
@@ -59,17 +53,19 @@ public class CartServiceImpl implements CartService {
         return response;
     }
 
-    @Transactional
-    public Cart getCartEntity() {
+    // Luôn trả về Cart. Nếu user chưa có thì tạo mới.
+    public Cart getOrCreateCartEntity() {
         return cartRepository.findByCustomerId(getCurrentUser().getId())
-                .orElseThrow(() ->
-                        new AppException(ErrorCode.CART_NOT_FOUND));
+                .orElseGet(() -> {
+                    Cart newCart = new Cart();
+                    newCart.setCustomer(getCurrentUser());
+                    return cartRepository.save(newCart);
+                });
     }
 
     @Override
-    @Transactional
     public CartResponse addToCart(CartItemRequest request) {
-        Cart cart = getCartEntity();
+        Cart cart = getOrCreateCartEntity();
 
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
@@ -88,7 +84,7 @@ public class CartServiceImpl implements CartService {
                     cart.getItems().add(item);
                 }
         );
-        cartRepository.save(cart);
+            cartRepository.save(cart);
         CartResponse cartResponse = cartMapper.toCartResponse(cart);
         // Tính totalPrice
         BigDecimal total = cart.getItems().stream()
@@ -100,7 +96,6 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    @Transactional
     public CartResponse updateCartItem(CartItemRequest request) {
         if (request.getProductId() == null) {
             throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
@@ -109,7 +104,7 @@ public class CartServiceImpl implements CartService {
             throw new AppException(ErrorCode.NEGATIVE_QUANTITY);
         }
 
-        Cart cart = getCartEntity();
+        Cart cart = getOrCreateCartEntity();
 
         // Tìm item trong cart
         CartItem item = cart.getItems().stream()
@@ -123,7 +118,7 @@ public class CartServiceImpl implements CartService {
             item.setQuantity(request.getQuantity()); // cập nhật quantity
         }
 
-        cartRepository.save(cart);
+            cartRepository.save(cart);
         CartResponse cartResponse = cartMapper.toCartResponse(cart);
         // Tính totalPrice
         BigDecimal total = cart.getItems().stream()
@@ -135,9 +130,8 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    @Transactional
     public void removeFromCart(Long productId) {
-        Cart cart = getCartEntity();
+        Cart cart = getOrCreateCartEntity();
         cart.getItems().removeIf(ci -> ci.getProduct().getId().equals(productId));
         cartRepository.save(cart);
     }
