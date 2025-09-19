@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import tasc.bookstore.dto.request.OrderItemRequest;
@@ -24,6 +26,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
+import static tasc.bookstore.specification.OrderSpecification.createdBetween;
+import static tasc.bookstore.specification.OrderSpecification.hasStatus;
 
 @Slf4j
 @Service
@@ -142,6 +147,15 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
+    @Override
+    public Page<OrderResponse> findAll(String status, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        return orderRepository.findAll(
+                        hasStatus(status)
+                        .and(createdBetween(startDate, endDate)),
+                    pageable)
+                .map(orderMapper::toOrderResponse);
+    }
+
     private User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByEmail(email)
@@ -153,7 +167,7 @@ public class OrderServiceImpl implements OrderService {
         String datePart = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 
         // 2. Sinh 4 chữ số ngẫu nhiên
-        int randomPart = (int)(Math.random() * 10000); // 0-9999
+        int randomPart = (int) (Math.random() * 10000); // 0-9999
         String randomPartStr = String.format("%04d", randomPart);
 
         // 3. Kết hợp ngày + random
@@ -161,7 +175,7 @@ public class OrderServiceImpl implements OrderService {
 
         // 4. Kiểm tra trùng với DB (nếu muốn thật sự an toàn)
         while (orderRepository.existsByCode(code)) {
-            randomPart = (int)(Math.random() * 10000);
+            randomPart = (int) (Math.random() * 10000);
             randomPartStr = String.format("%04d", randomPart);
             code = "ORDER" + datePart + randomPartStr;
         }

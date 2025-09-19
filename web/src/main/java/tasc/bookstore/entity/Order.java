@@ -38,9 +38,6 @@ public class Order {
 
     BigDecimal totalAmount;
 
-//    @Column(columnDefinition = "TEXT")
-//    String shippingAddress;
-
     @Column(columnDefinition = "TEXT")
     String note;
 

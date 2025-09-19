@@ -4,12 +4,17 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import tasc.bookstore.dto.request.OrderRequest;
 import tasc.bookstore.dto.response.ApiResponse;
 import tasc.bookstore.dto.response.OrderResponse;
 import tasc.bookstore.service.OrderService;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -29,7 +34,7 @@ public class OrderController {
     }
 
     @GetMapping("/mine")
-    public ApiResponse<List<OrderResponse>> getMyOrders(){
+    public ApiResponse<List<OrderResponse>> getMyOrders() {
         ApiResponse<List<OrderResponse>> apiResponse = new ApiResponse<>();
         apiResponse.setMessage("All my orders");
         apiResponse.setResult(orderService.getMyOrders());
@@ -48,6 +53,21 @@ public class OrderController {
         ApiResponse<OrderResponse> apiResponse = new ApiResponse<>();
         apiResponse.setMessage("Order cancelled");
         orderService.cancelOrder(id);
+        return apiResponse;
+    }
+
+    @GetMapping("/spec/search")
+    public ApiResponse<Page<OrderResponse>> searchOrders(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        LocalDateTime start = (startDate != null) ? startDate.atStartOfDay() : null;
+        LocalDateTime end = (endDate != null) ? endDate.atTime(23, 59, 59) : null;
+        ApiResponse<Page<OrderResponse>> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(orderService.findAll(status, start, end, PageRequest.of(page, size)));
         return apiResponse;
     }
 }
