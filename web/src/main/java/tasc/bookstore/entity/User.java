@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import tasc.bookstore.enums.Role;
 
 import java.util.Set;
 
@@ -36,11 +37,9 @@ public class User {
     @Column(columnDefinition = "TEXT")
     String address;
 
-    Set<String> role;
-
-//    @ElementCollection(fetch = FetchType.EAGER)
-//    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
-//    @Enumerated(EnumType.STRING)
-//    @Column(name = "role")
-//    Set<Role> role;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    Set<Role> role;
 }

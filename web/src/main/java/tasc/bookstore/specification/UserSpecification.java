@@ -21,10 +21,14 @@ public class UserSpecification {
 
     public static Specification<User> hasRole(String role) {
         return (root, query, criteriaBuilder) -> {
-            if (role == null || role.isBlank()) return null;
-
-            return criteriaBuilder.like(root.get("role"), "%" + role + "%");
-
+            if (role == null || role.isBlank()) {
+                return null;
+            }
+            // Dùng isMember để kiểm tra role có trong Set<String>
+            return criteriaBuilder.isMember(role, root.get("role"));
         };
     }
+
+
+
 }

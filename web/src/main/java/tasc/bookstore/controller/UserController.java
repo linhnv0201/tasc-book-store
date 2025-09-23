@@ -9,7 +9,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import tasc.bookstore.dto.request.UserCreationRequest;
 import tasc.bookstore.dto.request.UserPasswordUpdateRequest;
@@ -60,6 +59,14 @@ public class UserController {
                 .result(userService.getUsers())
                 .build();
     }
+
+//    @GetMapping("/role/{role}")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+//    ApiResponse<List<UserResponse>> getUsersByRole(@PathVariable String role) {
+//        ApiResponse<List<UserResponse>> apiResponse = new ApiResponse<>();
+//        apiResponse.setResult(userService.getUsersByRole(role));
+//        return apiResponse;
+//    }
 
     @GetMapping("/spec/search")
     @PreAuthorize("hasRole('ADMIN')")
@@ -118,14 +125,14 @@ public class UserController {
         return apiResponse;
     }
 
-    @GetMapping("/fullname/{fullname}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
-    public ApiResponse<List<UserResponse>> getUsersByFullname(@PathVariable String fullname) {
-        ApiResponse<List<UserResponse>> response = new ApiResponse<>();
-        response.setMessage("Successfully retrieved users by fullname");
-        response.setResult(userService.getUsersByFullname(fullname));
-        return response;
-    }
+//    @GetMapping("/fullname/{fullname}")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+//    public ApiResponse<List<UserResponse>> getUsersByFullname(@PathVariable String fullname) {
+//        ApiResponse<List<UserResponse>> response = new ApiResponse<>();
+//        response.setMessage("Successfully retrieved users by fullname");
+//        response.setResult(userService.getUsersByFullname(fullname));
+//        return response;
+//    }
 
     // Update User
     @PutMapping("/myInfo")

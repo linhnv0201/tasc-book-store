@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import tasc.bookstore.dto.response.UserResponse;
 import tasc.bookstore.entity.Product;
 import tasc.bookstore.entity.User;
+import tasc.bookstore.enums.Role;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,10 +31,13 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     //JPA sẽ khởi tạo trực tiếp object UserResponse cho mỗi row trả về từ DB.
     //Các giá trị u.email, u.password, ... được truyền vào constructor của UserResponse.
     //triu vấn này dùng jpql (dùng tên class và field của entity chứ ko phải của db)
-    @Query("SELECT new tasc.bookstore.dto.response.UserResponse(" +
-            "u.email, u.password, u.fullname, u.phone, u.address, u.role) " +
-            "FROM User u " +
-            "WHERE u.fullname = :fullname")
-    List<UserResponse> findUsersByFullname(@Param("fullname") String fullname);
+//    @Query("SELECT new tasc.bookstore.dto.response.UserResponse(" +
+//            "u.email, u.password, u.fullname, u.phone, u.address) " +
+//            "FROM User u " +
+//            "WHERE u.fullname = :fullname")
+//    List<UserResponse> findUsersByFullname(@Param("fullname") String fullname);
+
+//    @Query("SELECT u FROM User u JOIN u.role r WHERE r = :role")
+//    List<User> findByRoleContains(@Param("role") String role);
 
 }

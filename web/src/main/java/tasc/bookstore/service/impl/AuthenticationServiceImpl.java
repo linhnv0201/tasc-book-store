@@ -195,7 +195,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 //      Scope thường được dùng trong JWT để xác định quyền hạn / permission của người dùng.
     private String buildScope(User user) {
         StringJoiner stringJoiner = new StringJoiner(" ");
-        if (!CollectionUtils.isEmpty(user.getRole())) user.getRole().forEach(stringJoiner::add);
+        if (!CollectionUtils.isEmpty(user.getRole())) {
+            user.getRole().forEach(role -> stringJoiner.add(role.name())); // dùng .name() chuyển enum -> String
+        }
         return stringJoiner.toString();
     }
+
 }

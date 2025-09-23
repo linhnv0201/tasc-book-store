@@ -2,6 +2,7 @@ package tasc.bookstore.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import tasc.bookstore.enums.Role;
 
 import java.util.Set;
 
@@ -17,5 +18,5 @@ public class UserResponse {
     String fullname;
     String phone;
     String address;
-    Set<String> role;
+    Set<Role> role;
 }

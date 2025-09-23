@@ -33,7 +33,7 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.save(category);
 
         CategoryResponse categoryResponse = new CategoryResponse();
-        category.setName(category.getName());
+        categoryResponse.setName(category.getName());
         return categoryResponse;
     }
 

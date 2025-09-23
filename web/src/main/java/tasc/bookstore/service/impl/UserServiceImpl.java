@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,7 +27,6 @@ import tasc.bookstore.service.UserService;
 
 import java.util.*;
 
-import static tasc.bookstore.specification.ProductSpecification.hasName;
 import static tasc.bookstore.specification.UserSpecification.*;
 
 @Slf4j
@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Set.of(Role.CUSTOMER.name()));
+        user.setRole(Set.of(Role.CUSTOMER));
         return userMapper.toUserResponse(userRepository.save(user));
     }
 
@@ -105,12 +105,17 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-//    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getUsers() {
         log.info("getUsers()");
         return userRepository.findAll().stream()
                 .map(userMapper::toUserResponse).toList();
     }
+
+//    @Override
+//    public List<UserResponse> getUsersByRole(String role) {
+//        return userRepository.findByRoleContains(role).stream()
+//                .map(userMapper::toUserResponse).toList();
+//    }
 
     @Override
     public UserResponse getUser(Long id) {
@@ -138,17 +143,6 @@ public class UserServiceImpl implements UserService {
         return userMapper.toUserResponse(user);
     }
 
-//    @Override
-//    public Map<String, Object> getMyInfoJDBC() {
-//        var context = SecurityContextHolder.getContext();
-//        String email = context.getAuthentication().getName();
-//
-//        //role bi serialize khi luu, dung voi jpa thi tu dong deserialize
-//        Map<String, Object> result = jdbcTemplate
-//                .queryForMap("select email, fullname, phone, address from users where email = ? ", email);
-//
-//        return result;
-//    }
     @Override
     public UserResponse getMyInfoJDBC() {
         var context = SecurityContextHolder.getContext();
@@ -167,10 +161,10 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
-    @Override
-    public List<UserResponse> getUsersByFullname(String fullname) {
-        return userRepository.findUsersByFullname(fullname);
-    }
+//    @Override
+//    public List<UserResponse> getUsersByFullname(String fullname) {
+//        return userRepository.findUsersByFullname(fullname);
+//    }
 
     @Override
     public Page<UserResponse> searchUsers(String email, String fullname, String role, Pageable pageable){
@@ -181,4 +175,6 @@ public class UserServiceImpl implements UserService {
                 , pageable
         ).map(userMapper::toUserResponse);
     }
+
+
 }
