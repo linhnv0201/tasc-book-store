@@ -28,6 +28,8 @@ public enum ErrorCode {
     CART_NOT_FOUND(1004, "Cart not found"),
     INSUFFICIENT_STOCK(1005, "Insufficient stock"),
     NO_PAYMENT_EXISTED(1005, "Payment already paid or cancelled"),
+    INVALID_REQUEST(1006, "Invalid request"),
+    INTERNAL_ERROR(1007, "Internal error"),
 
     ;
     int code;

@@ -24,7 +24,8 @@ payment:
     url: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
     tmnCode: "EFAXRVFK"
     secretKey: "H2LZYC57EI28HPVTR4H13HTKM682U60E"
-    returnUrl: "http://localhost:8000/bookstore/payment/vn-pay-callback"
+    returnUrl: "http://localhost:8080/bookstore/payment/vn-pay-callback"
     version: 2.1.0
     command: "pay"
     orderType: "other"
+    queryUrl: "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction"

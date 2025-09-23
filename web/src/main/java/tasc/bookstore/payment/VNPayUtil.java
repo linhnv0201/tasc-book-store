@@ -1,16 +1,18 @@
 package tasc.bookstore.payment;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class VNPayUtil {
+
     public static String hmacSHA512(final String key, final String data) {
         try {
             if (key == null || data == null) {
@@ -46,15 +48,6 @@ public class VNPayUtil {
         return ipAdress;
     }
 
-    public static String getRandomNumber(int len) {
-        Random rnd = new Random();
-        String chars = "0123456789";
-        StringBuilder sb = new StringBuilder(len);
-        for (int i = 0; i < len; i++) {
-            sb.append(chars.charAt(rnd.nextInt(chars.length())));
-        }
-        return sb.toString();
-    }
     public static String getPaymentURL(Map<String, String> paramsMap, boolean encodeKey) {
         return paramsMap.entrySet().stream()
                 .filter(entry -> entry.getValue() != null && !entry.getValue().isEmpty())
@@ -67,5 +60,71 @@ public class VNPayUtil {
                                         , StandardCharsets.US_ASCII))
                 .collect(Collectors.joining("&"));
     }
+
+    public static String generateTxnRef(Long orderId) {
+        // format theo yyyyMMddHHmmss cho dễ trace
+        String timestamp = new java.text.SimpleDateFormat("yyyyMMddHHmmss")
+                .format(new java.util.Date());
+        return orderId + "-" + timestamp;
+    }
+
+//    //Util for VNPAY
+//    public static String hashAllFields(Map fields) {
+//        List fieldNames = new ArrayList(fields.keySet());
+//        Collections.sort(fieldNames);
+//        StringBuilder sb = new StringBuilder();
+//        Iterator itr = fieldNames.iterator();
+//        while (itr.hasNext()) {
+//            String fieldName = (String) itr.next();
+//            String fieldValue = (String) fields.get(fieldName);
+//            if ((fieldValue != null) && (fieldValue.length() > 0)) {
+//                sb.append(fieldName);
+//                sb.append("=");
+//                sb.append(fieldValue);
+//            }
+//            if (itr.hasNext()) {
+//                sb.append("&");
+//            }
+//        }
+//        return hmacSHA512("H2LZYC57EI28HPVTR4H13HTKM682U60E",sb.toString());
+//    }
+public static String hashAllFields(Map<String, String> fields, String secretKey) {
+    // 1. Cấu trúc thứ tự tham số theo tài liệu
+    String[] orderedKeys = new String[] {
+            "vnp_RequestId",
+            "vnp_Version",
+            "vnp_Command",
+            "vnp_TmnCode",
+            "vnp_TxnRef",
+            "vnp_TransactionDate",
+            "vnp_CreateDate",
+            "vnp_IpAddr",
+            "vnp_OrderInfo"
+    };
+
+    // 2. Nối giá trị bằng '|'
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < orderedKeys.length; i++) {
+        String key = orderedKeys[i];
+        String value = fields.get(key);
+        if (value == null) value = "";
+        sb.append(value);
+        if (i < orderedKeys.length - 1) {
+            sb.append("|");
+        }
+    }
+
+    // 3. Tính HMAC SHA512
+    return hmacSHA512(secretKey, sb.toString());
+}
+
+
+    public static String buildQueryString(Map<String, String> params) {
+        return params.entrySet()
+                .stream()
+                .map(e -> e.getKey() + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
+                .collect(Collectors.joining("&"));
+    }
+
 
 }

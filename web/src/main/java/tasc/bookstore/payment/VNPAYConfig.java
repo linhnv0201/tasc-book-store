@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+@Getter
 @Configuration
 public class VNPAYConfig {
     @Getter
@@ -24,6 +25,8 @@ public class VNPAYConfig {
     private String vnp_Command;
     @Value("${payment.vnPay.orderType}")
     private String orderType;
+    @Value("${payment.vnPay.queryUrl}")
+    private String vnp_ApiUrl;
 
 
     public Map<String, String> getVNPayConfig() {
@@ -32,8 +35,6 @@ public class VNPAYConfig {
         vnpParamsMap.put("vnp_Command", this.vnp_Command);
         vnpParamsMap.put("vnp_TmnCode", this.vnp_TmnCode);
         vnpParamsMap.put("vnp_CurrCode", "VND");
-        vnpParamsMap.put("vnp_TxnRef",  VNPayUtil.getRandomNumber(8));
-        vnpParamsMap.put("vnp_OrderInfo", "Thanh toan don hang:" +  VNPayUtil.getRandomNumber(8));
         vnpParamsMap.put("vnp_OrderType", this.orderType);
         vnpParamsMap.put("vnp_Locale", "vn");
         vnpParamsMap.put("vnp_ReturnUrl", this.vnp_ReturnUrl);

@@ -36,6 +36,14 @@ public class Order {
     @Column(nullable = false)
     Status status;
 
+    // createDate (yyyyMMddHHmmss)
+    @Column(name = "vnp_txn_ref", unique = true)
+    String vnpTxnRef;  // để map với callback/querydr
+
+    @Column(name = "vnp_create_date")
+    String vnpCreateDate;  // yyyyMMddHHmmss
+
+
     BigDecimal totalAmount;
 
     @Column(columnDefinition = "TEXT")
@@ -47,6 +55,6 @@ public class Order {
     private List<OrderItem> items = new ArrayList<>(); // <-- quan trọng
 
     public enum Status {
-        PENDING, PAID, SHIPPED, CANCELLED
+        PENDING, PENDING_PAYMENT, PAID, SHIPPED, CANCELLED
     }
 }
