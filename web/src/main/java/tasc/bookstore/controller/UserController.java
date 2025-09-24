@@ -15,6 +15,7 @@ import tasc.bookstore.dto.request.UserPasswordUpdateRequest;
 import tasc.bookstore.dto.request.UserUpdateRequest;
 import tasc.bookstore.dto.response.ApiResponse;
 import tasc.bookstore.dto.response.UserResponse;
+import tasc.bookstore.dto.response.UserResponseNoRole;
 import tasc.bookstore.service.UserService;
 
 import java.util.List;
@@ -60,13 +61,13 @@ public class UserController {
                 .build();
     }
 
-//    @GetMapping("/role/{role}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
-//    ApiResponse<List<UserResponse>> getUsersByRole(@PathVariable String role) {
-//        ApiResponse<List<UserResponse>> apiResponse = new ApiResponse<>();
-//        apiResponse.setResult(userService.getUsersByRole(role));
-//        return apiResponse;
-//    }
+    @GetMapping("/role/{role}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+    ApiResponse<List<UserResponse>> getUsersByRole(@PathVariable String role) {
+        ApiResponse<List<UserResponse>> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.getUsersByRole(role));
+        return apiResponse;
+    }
 
     @GetMapping("/spec/search")
     @PreAuthorize("hasRole('ADMIN')")
@@ -125,14 +126,14 @@ public class UserController {
         return apiResponse;
     }
 
-//    @GetMapping("/fullname/{fullname}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
-//    public ApiResponse<List<UserResponse>> getUsersByFullname(@PathVariable String fullname) {
-//        ApiResponse<List<UserResponse>> response = new ApiResponse<>();
-//        response.setMessage("Successfully retrieved users by fullname");
-//        response.setResult(userService.getUsersByFullname(fullname));
-//        return response;
-//    }
+    @GetMapping("/fullname/{fullname}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+    public ApiResponse<List<UserResponseNoRole>> getUsersByFullname(@PathVariable String fullname) {
+        ApiResponse<List<UserResponseNoRole>> response = new ApiResponse<>();
+        response.setMessage("Successfully retrieved users by fullname");
+        response.setResult(userService.getUsersByFullname(fullname));
+        return response;
+    }
 
     // Update User
     @PutMapping("/myInfo")

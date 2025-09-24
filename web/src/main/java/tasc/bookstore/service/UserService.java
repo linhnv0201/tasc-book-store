@@ -6,6 +6,7 @@ import tasc.bookstore.dto.request.UserCreationRequest;
 import tasc.bookstore.dto.request.UserPasswordUpdateRequest;
 import tasc.bookstore.dto.request.UserUpdateRequest;
 import tasc.bookstore.dto.response.UserResponse;
+import tasc.bookstore.dto.response.UserResponseNoRole;
 
 import java.util.List;
 import java.util.Map;
@@ -17,13 +18,12 @@ public interface UserService {
     UserResponse updateMyInfo(UserUpdateRequest request);
     UserResponse updateMyPassword(UserPasswordUpdateRequest request);
     List<UserResponse> getUsers();
-//    List<UserResponse> getUsersByRole(String role);
+    List<UserResponse> getUsersByRole(String role);
     UserResponse getUser(Long id);
     void deleteUser(Long id);
     UserResponse getMyInfo();
 //    Map<String, Object> getMyInfoJDBC();
     UserResponse getMyInfoJDBC();
-//    List<UserResponse> getUsersByRole(String roleName);
-//    List<UserResponse> getUsersByFullname(String fullname);
+    List<UserResponseNoRole> getUsersByFullname(String fullname);
     Page<UserResponse> searchUsers(String email, String fullname, String role, Pageable pageable);
 }

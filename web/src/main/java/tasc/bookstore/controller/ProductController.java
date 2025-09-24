@@ -143,12 +143,9 @@ public class ProductController {
 
     @GetMapping("/top-sold")
     public ApiResponse<List<Map<String, Object>>> getTopSoldProducts(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        if (endDate == null) {
-            endDate = LocalDate.now();
-        }
         ApiResponse<List<Map<String, Object>>> apiResponse = new ApiResponse<>();
         apiResponse.setMessage("Successfully retrieved top-sold products");
         apiResponse.setResult(productService.getTopSoldProducts(startDate, endDate));

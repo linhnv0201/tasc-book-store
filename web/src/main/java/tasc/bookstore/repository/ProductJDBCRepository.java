@@ -103,21 +103,30 @@ public class ProductJDBCRepository {
 //    }
 
     public List<Map<String, Object>> getTopSoldProducts(LocalDate startDate, LocalDate endDate) {
-        String sql = """
+        StringBuilder sql = new StringBuilder("""
         SELECT p.id, p.name, SUM(oi.quantity) AS total_sold
         FROM order_items oi
         JOIN products p ON oi.product_id = p.id
         JOIN orders o ON oi.order_id = o.id
-        WHERE o.created_at BETWEEN :startDate AND :endDate
-        GROUP BY p.id, p.name
-        ORDER BY total_sold DESC
-        """;
+        """);
 
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("startDate", startDate)
-                .addValue("endDate", endDate);
+        MapSqlParameterSource params = new MapSqlParameterSource();
 
-        return namedJdbcTemplate.query(sql, params,
+        if (startDate != null && endDate != null) {
+            sql.append(" WHERE o.created_at BETWEEN :startDate AND :endDate");
+            params.addValue("startDate", startDate);
+            params.addValue("endDate", endDate);
+        } else if (startDate != null && endDate == null) {
+            sql.append(" WHERE o.created_at >= :startDate AND o.created_at <= NOW()");
+            params.addValue("startDate", startDate);
+        } else if (startDate == null && endDate != null) {
+            sql.append(" WHERE o.created_at <= :endDate");
+            params.addValue("endDate", endDate);
+        } // nếu cả hai null => all time -> không WHERE
+
+        sql.append(" GROUP BY p.id, p.name ORDER BY total_sold DESC");
+
+        return namedJdbcTemplate.query(sql.toString(), params,
                 (ResultSet rs) -> {
                     List<Map<String, Object>> results = new ArrayList<>();
                     while (rs.next()) {
@@ -131,6 +140,8 @@ public class ProductJDBCRepository {
                 }
         );
     }
+
+
 
     public List<Map<String, Object>> getPurchaseOrderItemBySupplierId(
             Long supplierId, LocalDate from, LocalDate to) {

@@ -1,0 +1,18 @@
+package tasc.bookstore.dto.response;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class UserResponseNoRole {
+    String email;
+    String password;
+    String fullname;
+    String phone;
+    String address;
+}

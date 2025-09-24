@@ -17,6 +17,7 @@ import tasc.bookstore.dto.request.UserCreationRequest;
 import tasc.bookstore.dto.request.UserPasswordUpdateRequest;
 import tasc.bookstore.dto.request.UserUpdateRequest;
 import tasc.bookstore.dto.response.UserResponse;
+import tasc.bookstore.dto.response.UserResponseNoRole;
 import tasc.bookstore.entity.User;
 import tasc.bookstore.enums.Role;
 import tasc.bookstore.exception.AppException;
@@ -111,11 +112,12 @@ public class UserServiceImpl implements UserService {
                 .map(userMapper::toUserResponse).toList();
     }
 
-//    @Override
-//    public List<UserResponse> getUsersByRole(String role) {
-//        return userRepository.findByRoleContains(role).stream()
-//                .map(userMapper::toUserResponse).toList();
-//    }
+    @Override
+    public List<UserResponse> getUsersByRole(String role) {
+        Role roleEnum = Role.valueOf(role);
+        return userRepository.findByRole(roleEnum).stream()
+                .map(userMapper::toUserResponse).toList();
+    }
 
     @Override
     public UserResponse getUser(Long id) {
@@ -161,10 +163,10 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
-//    @Override
-//    public List<UserResponse> getUsersByFullname(String fullname) {
-//        return userRepository.findUsersByFullname(fullname);
-//    }
+    @Override
+    public List<UserResponseNoRole> getUsersByFullname(String fullname) {
+        return userRepository.findUsersByFullname(fullname);
+    }
 
     @Override
     public Page<UserResponse> searchUsers(String email, String fullname, String role, Pageable pageable){

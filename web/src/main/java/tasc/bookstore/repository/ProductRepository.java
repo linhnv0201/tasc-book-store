@@ -39,7 +39,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
 //    Cách 4: Dùng store procedure
     @Procedure(name = "GetProductsByCategoryId")
-    List<Product> GetProductsByCategoryId(@Param("categoryId") Long categoryId);
+    List<Product> getProductsByCategoryId(@Param("categoryId") Long categoryId);
 
     //JPQL
         //Query đơn giản, theo entity

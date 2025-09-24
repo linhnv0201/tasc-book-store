@@ -14,6 +14,7 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderResponse {
+    Long id;
     String code;
     List<OrderItemResponse> items;
     BigDecimal totalAmount;
