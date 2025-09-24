@@ -7,13 +7,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tasc.bookstore.dto.request.UserCreationRequest;
+import tasc.bookstore.dto.request.UserInfoUpdateRequest;
 import tasc.bookstore.dto.request.UserPasswordUpdateRequest;
 import tasc.bookstore.dto.request.UserUpdateRequest;
 import tasc.bookstore.dto.response.UserResponse;
@@ -83,11 +82,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse updateMyInfo(UserUpdateRequest request) {
+    public UserResponse updateMyInfo(UserInfoUpdateRequest request) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        userMapper.toUpdateUser(user, request);
+        userMapper.toUpdateUserInfo(user, request);
 //        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 //        user.setPassword(passwordEncoder.encode(request.getPassword()));
         return userMapper.toUserResponse(userRepository.save(user));

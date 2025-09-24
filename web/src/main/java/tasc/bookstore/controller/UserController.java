@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import tasc.bookstore.dto.request.UserCreationRequest;
+import tasc.bookstore.dto.request.UserInfoUpdateRequest;
 import tasc.bookstore.dto.request.UserPasswordUpdateRequest;
 import tasc.bookstore.dto.request.UserUpdateRequest;
 import tasc.bookstore.dto.response.ApiResponse;
@@ -137,7 +138,7 @@ public class UserController {
 
     // Update User
     @PutMapping("/myInfo")
-    public ApiResponse<UserResponse> updateMyInfo(@RequestBody @Valid UserUpdateRequest request) {
+    public ApiResponse<UserResponse> updateMyInfo(@RequestBody @Valid UserInfoUpdateRequest request) {
         ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
         apiResponse.setResult(userService.updateMyInfo(request));
         apiResponse.setMessage("Successfully updated your info");
