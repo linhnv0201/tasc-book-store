@@ -13,6 +13,7 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PurchaseOrderResponse {
+    Long id;
     String code;
     String supplierName;
     String createdBy;

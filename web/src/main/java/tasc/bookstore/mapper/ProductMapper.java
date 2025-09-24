@@ -42,7 +42,7 @@ public interface ProductMapper {
         if (product.getCategories() != null) {
             Set<CategoryResponse> categoryResponses = product.getCategories()
                     .stream()
-                    .map(c -> new CategoryResponse(c.getName()))
+                    .map(c -> new CategoryResponse(c.getId(), c.getName()))
                     .collect(Collectors.toSet());
             response.setCategories(categoryResponses);
         } else {

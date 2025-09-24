@@ -10,7 +10,6 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserInfoUpdateRequest {
-
     String fullname;
     String phone;
     String address;

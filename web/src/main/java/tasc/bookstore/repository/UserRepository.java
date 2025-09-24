@@ -31,7 +31,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     //Các giá trị u.email, u.password, ... được truyền vào constructor của UserResponse.
     //triu vấn này dùng jpql (dùng tên class và field của entity chứ ko phải của db)
     @Query("SELECT new tasc.bookstore.dto.response.UserResponseNoRole(" +
-            "u.email, u.password, u.fullname, u.phone, u.address) " +
+            "u.id, u.email, u.password, u.fullname, u.phone, u.address) " +
             "FROM User u " +
             "WHERE u.fullname = :fullname")
     List<UserResponseNoRole> findUsersByFullname(@Param("fullname") String fullname);

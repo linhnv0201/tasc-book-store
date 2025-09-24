@@ -10,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class SupplierResponse {
+    Long id;
     String name;
     String email;
     String phone;

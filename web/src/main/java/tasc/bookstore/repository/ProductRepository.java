@@ -18,8 +18,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
 //Các cách truy vấn lấy list product by categoryId
 //    Cách 1: JPQL
-//    @Query("SELECT p FROM Product p JOIN p.categories c where c.id = :categoryId")
-//    List<Product> GetProductsByCategoryId(Long categoryId);
+    @Query("SELECT p FROM Product p JOIN p.categories c where c.id = :categoryId")
+    List<Product> GetProductsByCategoryId(Long categoryId);
 
 //    Cách 2: native query, dùng Param trong trường họp có nhiều parameter
 //    @Query(value = "SELECT p.* " +
@@ -38,8 +38,8 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 //    List<Product> GetProductsByCategoryId(Long categoryId);
 
 //    Cách 4: Dùng store procedure
-    @Procedure(name = "GetProductsByCategoryId")
-    List<Product> getProductsByCategoryId(@Param("categoryId") Long categoryId);
+//    @Procedure(name = "GetProductsByCategoryId")
+//    List<Product> getProductsByCategoryId(@Param("categoryId") Long categoryId);
 
     //JPQL
         //Query đơn giản, theo entity

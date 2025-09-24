@@ -104,7 +104,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)  // ← cần để giữ connection mở, dùng với khai báo StoreProcedure
     public List<ProductResponse> getAllProductsByCategory(Long categoryId) {
-        return productRepository.getProductsByCategoryId(categoryId).stream()
+        return productRepository.GetProductsByCategoryId(categoryId).stream()
                 .map(productMapper::toProductResponse)
                 .map(this::filterProductForNonAdmin)
                 .toList();
