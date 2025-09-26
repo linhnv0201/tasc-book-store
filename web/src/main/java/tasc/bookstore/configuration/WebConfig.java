@@ -14,7 +14,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins(
                         "http://localhost:4200",
                         "127.0.0.1:5500",
-                        "https://clothing-dms-aay8aa4l1-vu-linhs-projects-83bba419.vercel.app",
+                        "https://clothing-dms-aay8aa4l1-vu-linhs-projects-83bba419.vercel.app"
                 ) // Chỉ cho phép yêu cầu từ domain này
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*") // Cho phép tất cả các header

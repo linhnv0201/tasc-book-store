@@ -5,6 +5,8 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,6 +23,7 @@ import tasc.bookstore.dto.request.LogoutRequest;
 import tasc.bookstore.dto.request.RefreshRequest;
 import tasc.bookstore.dto.response.AuthenticationResponse;
 import tasc.bookstore.dto.response.IntrospectResponse;
+import tasc.bookstore.dto.response.RequireRefreshTokenResponse;
 import tasc.bookstore.entity.InvalidatedToken;
 import tasc.bookstore.entity.User;
 import tasc.bookstore.exception.AppException;
@@ -67,7 +70,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String token = request.getToken();
         boolean isValid = true;
         try {
-            verifyToken(token, false);
+            verifyToken(token);
         } catch (AppException e) {
             isValid = false;
         }
@@ -76,7 +79,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     //AuthenticationRequest chính là thông tin đăng nhập(email + pass)
     @Override
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    public AuthenticationResponse authenticate(
+            AuthenticationRequest request,
+            HttpServletResponse response) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
@@ -88,21 +93,40 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         if (!authenticated) throw new AppException(ErrorCode.WRONG_PASSWORD);
 
-        String token;
+        String accessToken;
+        String refreshToken;
         try {
-            token = generateToken(user);
+            accessToken = generateToken(user, VALID_DURATION, "ACCESS");
+            refreshToken = generateToken(user, REFRESHABLE_DURATION, "REFRESH");
         } catch (JOSEException e) {
             throw new RuntimeException(e);
         }
 
-        return AuthenticationResponse.builder().token(token).authenticated(true).build();
+        // --- Set access token cookie ---
+        jakarta.servlet.http.Cookie accessCookie = new jakarta.servlet.http.Cookie("accessToken", accessToken);
+        accessCookie.setHttpOnly(true);  // JS không đọc được
+        accessCookie.setPath("/");        // áp dụng toàn bộ domain
+        accessCookie.setMaxAge(VALID_DURATION.intValue()); // thời gian sống token (giây)
+        response.addCookie(accessCookie);
+
+        // --- Set refresh token cookie ---
+        jakarta.servlet.http.Cookie refreshCookie = new jakarta.servlet.http.Cookie("refreshToken", refreshToken);
+        refreshCookie.setHttpOnly(true);      // JS không đọc được
+        refreshCookie.setPath("/auth/refresh"); // chỉ gửi khi gọi endpoint refresh
+        refreshCookie.setMaxAge(REFRESHABLE_DURATION.intValue()); // thời gian sống refresh token
+        response.addCookie(refreshCookie);
+
+        return AuthenticationResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .authenticated(true)
+                .build();
     }
 
     @Override
     public void logout(LogoutRequest request) throws ParseException, JOSEException {
         try {
-            //chưa hiểu lắm vì sao lại true
-            SignedJWT signedToken = verifyToken(request.getToken(), true);
+            SignedJWT signedToken = verifyToken(request.getToken());
             String jti = signedToken.getJWTClaimsSet().getJWTID();
             Date expiryTime = signedToken.getJWTClaimsSet().getExpirationTime();
             InvalidatedToken invalidatedToken = InvalidatedToken.builder().id(jti).expireTime(expiryTime).build();
@@ -114,33 +138,54 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
-        SignedJWT signedJWT = verifyToken(request.getToken(), true);
-        String jti = signedJWT.getJWTClaimsSet().getJWTID();
-        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+    public RequireRefreshTokenResponse refreshToken(RefreshRequest request, HttpServletRequest httpRequest) throws ParseException, JOSEException {
+        String refreshToken = request.getToken();
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            throw new AppException(ErrorCode.REFRESH_TOKEN_NOT_FOUND);
+        }
 
-        InvalidatedToken invalidatedToken = InvalidatedToken.builder().id(jti).expireTime(expiryTime).build();
+        // 2. Verify refresh token
+        SignedJWT refreshJWT = verifyToken(refreshToken);
+        String username = refreshJWT.getJWTClaimsSet().getSubject();
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        invalidatedTokenRepository.save(invalidatedToken);
+        // 3. Invalidate old access token (lấy từ header Authorization)
+        String oldAccessToken = getAccessTokenFromRequest(httpRequest);
+        System.out.println(oldAccessToken);
+        if (oldAccessToken != null) {
+            SignedJWT oldAccessJWT = SignedJWT.parse(oldAccessToken);
+            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                    .id(oldAccessJWT.getJWTClaimsSet().getJWTID())
+                    .expireTime(oldAccessJWT.getJWTClaimsSet().getExpirationTime())
+                    .build();
+            invalidatedTokenRepository.save(invalidatedToken);
+        }
 
-        String username = signedJWT.getJWTClaimsSet().getSubject();
-        User user = userRepository.findByEmail(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        // 4. Tạo access token mới
+        String newAccessToken = generateToken(user, VALID_DURATION, "ACCESS");
 
-        String token = generateToken(user);
-        return AuthenticationResponse.builder().token(token).authenticated(true).build();
-
+        return RequireRefreshTokenResponse.builder()
+                .accessToken(newAccessToken)
+                .authenticated(true)
+                .build();
     }
 
-    private SignedJWT verifyToken(String token, boolean isRefresh) throws ParseException, JOSEException {
+    private String getAccessTokenFromRequest(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
+    }
+
+
+
+    private SignedJWT verifyToken(String token) throws ParseException, JOSEException {
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
-
         SignedJWT signedJWT = SignedJWT.parse(token);
-
-        Date expiryTime = (isRefresh) ?
-                new Date(signedJWT.getJWTClaimsSet().getIssueTime().toInstant().plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS).toEpochMilli())
-                : signedJWT.getJWTClaimsSet().getExpirationTime();
-
         boolean verifired = signedJWT.verify(verifier);
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
         if (!(verifired && expiryTime.after(new Date()))) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
@@ -153,19 +198,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return signedJWT;
     }
 
-    String generateToken(User user) throws JOSEException {
+    String generateToken(User user, Long duration, String type) throws JOSEException {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
-//        System.out.println(header); // in ra: {"alg":"HS512"} ("alg": thuật toán ký, ở đây là HS512 (HMAC + SHA-512))
-
 //        đại diện phần payload
-        JWTClaimsSet jwtClaimSet = new JWTClaimsSet.Builder()
+        JWTClaimsSet.Builder claimsBuilder = new JWTClaimsSet.Builder()
                 .subject(user.getEmail())
                 .issuer("vulinh")
                 .issueTime(new Date())
-                .expirationTime(new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
+                .expirationTime(new Date(Instant.now().plus(duration, ChronoUnit.SECONDS).toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
-                .claim("role", buildScope(user))
-                .build();
+                .claim("type", type); // ACCESS vs REFRESH
+
+        if ("ACCESS".equals(type)) {
+            claimsBuilder.claim("role", buildScope(user));
+        }
+        // Build claims cuối cùng
+        JWTClaimsSet jwtClaimSet = claimsBuilder.build();
+
 //        in ra: {"sub":"king","scope":"EMPLOYEE CUSTOMER ADMIN","iss":"vulinh"
 //                ,"exp":1757582258,"iat":1757578658,"jti":"48a34366-d69d-4e1c-aff3-7f2579ecc165"}
 //        System.out.println(jwtClaimSet);

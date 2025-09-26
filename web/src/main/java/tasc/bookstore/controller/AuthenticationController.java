@@ -2,16 +2,15 @@ package tasc.bookstore.controller;
 
 
 import com.nimbusds.jose.JOSEException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 import tasc.bookstore.dto.request.*;
-import tasc.bookstore.dto.response.ApiResponse;
-import tasc.bookstore.dto.response.AuthenticationResponse;
-import tasc.bookstore.dto.response.IntrospectResponse;
-import tasc.bookstore.dto.response.UserResponse;
+import tasc.bookstore.dto.response.*;
 import tasc.bookstore.service.AuthenticationService;
 import tasc.bookstore.service.UserService;
 
@@ -26,10 +25,12 @@ public class AuthenticationController {
     AuthenticationService authenticationService;
     UserService userService;
 
-    @PostMapping("/token")
-    ApiResponse<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
+    @PostMapping("/login")
+    ApiResponse<AuthenticationResponse> login(
+            @RequestBody AuthenticationRequest request,
+            HttpServletResponse response) throws ParseException, JOSEException {
         ApiResponse<AuthenticationResponse> apiResponse = new ApiResponse<>();
-        AuthenticationResponse result = authenticationService.authenticate(request);
+        AuthenticationResponse result = authenticationService.authenticate(request, response);
         apiResponse.setResult(result);
         return apiResponse;
     }
@@ -43,12 +44,18 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh")
-    ApiResponse<AuthenticationResponse> authenticate(@RequestBody RefreshRequest request) throws ParseException, JOSEException {
-        var result = authenticationService.refreshToken(request);
-        ApiResponse<AuthenticationResponse> apiResponse = new ApiResponse<>();
+    ApiResponse<RequireRefreshTokenResponse> refresh(
+            @RequestBody RefreshRequest request,
+            HttpServletRequest httpRequest) throws ParseException, JOSEException {
+
+        // Truyền cả request để service đọc access token cũ
+        var result = authenticationService.refreshToken(request,httpRequest);
+
+        ApiResponse<RequireRefreshTokenResponse> apiResponse = new ApiResponse<>();
         apiResponse.setResult(result);
         return apiResponse;
     }
+
 
     @PostMapping("/register")
     public ApiResponse<UserResponse> register(@RequestBody @Valid UserCreationRequest request) {

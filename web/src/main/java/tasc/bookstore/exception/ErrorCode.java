@@ -30,6 +30,7 @@ public enum ErrorCode {
     NO_PAYMENT_EXISTED(1005, "Payment already paid or cancelled"),
     INVALID_REQUEST(1006, "Invalid request"),
     INTERNAL_ERROR(1007, "Internal error"),
+    REFRESH_TOKEN_NOT_FOUND(1008, "Refresh token not found"),
 
     ;
     int code;
